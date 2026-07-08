@@ -1,0 +1,36 @@
+GET http://localhost:8080/hello-world
+###
+GET http://localhost:8080/user/new
+
+### Ping
+GET http://localhost:8080/api/ping
+
+
+### Get all tasks
+GET http://localhost:8080/api/tasks
+
+
+### Create task
+POST http://localhost:8080/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Nauczyć się REST API w Spring Boot"
+}
+
+
+### Create invalid task
+POST http://localhost:8080/api/tasks
+Content-Type: application/json
+
+{
+  "title": ""
+}
+
+
+### Mark task as done
+PATCH http://localhost:8080/api/tasks/1/done
+
+
+### Mark non-existing task as done
+PATCH http://localhost:8080/api/tasks/999/done

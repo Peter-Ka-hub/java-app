@@ -1,0 +1,196 @@
+databaseChangeLog:
+#  - preConditions:
+#      - onFail: CONTINUE
+#      - runningAs:
+#        username: liquibase
+
+  - changeSet:
+      id: 001-create-school-table
+      author: peter
+      labels: init
+      context: dev
+      comment: Create school table
+      changes:
+        - createTable:
+            tableName: school
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: "RANDOM_UUID()"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_of_construction
+                  type: date
+              - column:
+                  name: type
+                  type: varchar(50)
+
+  - changeSet:
+      id: 002-create-app-user-table
+      author: peter
+      labels: init
+      context: dev
+      comment: Create user table
+      changes:
+        - createTable:
+            tableName: app_user
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: first_name
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_name
+                  type: varchar(50)
+              - column:
+                  name: role
+                  type: varchar(50)
+              - column:
+                  name: date_of_birth
+                  type: date
+              - column:
+                  name: pesel
+                  type: varchar(11)
+              - column:
+                  name: school_id
+                  type: uuid
+              - column:
+                  name: email
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+#        - addForeignKeyConstraint:
+#            baseTableName: app_user
+#            baseColumnNames: school_id
+#            referencedTableName: school
+#            referencedColumnNames: id
+#            constraintName: fk_user_school
+        - createIndex:
+            tableName: app_user
+            indexName: uq_app_user_email
+            unique: true
+            columns:
+              - column:
+                  name: email
+
+  - changeSet:
+      id: 003-create-subject-table
+      author: peter
+      labels: init
+      context: dev
+      comment: Create subject table
+      changes:
+        - createTable:
+            tableName: subject
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(50)
+              - column:
+                  name: teacher_id
+                  type: uuid
+        - addForeignKeyConstraint:
+            baseTableName: subject
+            baseColumnNames: teacher_id
+            referencedTableName: app_user
+            referencedColumnNames: id
+            constraintName: fk_subject_teacher
+
+  - changeSet:
+      id: 004-create-grade-table
+      author: peter
+      labels: init
+      context: dev
+      comment: Create grade table
+      changes:
+        - createTable:
+            tableName: grade
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: score
+                  type: varchar(50)
+              - column:
+                  name: date_of_score
+                  type: date
+              - column:
+                  name: student_id
+                  type: uuid
+              - column:
+                  name: subject_id
+                  type: uuid
+        - addForeignKeyConstraint:
+            baseTableName: grade
+            baseColumnNames: student_id
+            referencedTableName: app_user
+            referencedColumnNames: id
+            constraintName: fk_grade_student
+        - addForeignKeyConstraint:
+            baseTableName: grade
+            baseColumnNames: subject_id
+            referencedTableName: subject
+            referencedColumnNames: id
+            constraintName: fk_grade_subject
+
+  - changeSet:
+      id: 005-create-subject-students-table
+      author: peter
+      labels: init
+      context: dev
+      comment: Create join table for subject students
+      changes:
+        - createTable:
+            tableName: subject_students
+            columns:
+              - column:
+                  name: subject_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: students_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: subject_students
+            columnNames: subject_id, students_id
+            constraintName: pk_subject_students
+        - addForeignKeyConstraint:
+            baseTableName: subject_students
+            baseColumnNames: subject_id
+            referencedTableName: subject
+            referencedColumnNames: id
+            constraintName: fk_subject_students_subject
+        - addForeignKeyConstraint:
+            baseTableName: subject_students
+            baseColumnNames: students_id
+            referencedTableName: app_user
+            referencedColumnNames: id
+            constraintName: fk_subject_students_user
