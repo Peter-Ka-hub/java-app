@@ -1,28 +1,36 @@
 package com.example.demo.domain.subject;
 
 import com.example.demo.domain.user.User;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import lombok.AccessLevel;
-import lombok.experimental.Accessors;
+import jakarta.persistence.*;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Accessors
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
+@Table(name = "subject")
 public class Subject {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
+
     String name;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "teacher_id")
     User teacher;
 
     @ManyToMany
-    Set<User> students;
+    @JoinTable(
+            name = "subject_students",
+            joinColumns = @JoinColumn(name = "subject_id"),
+            inverseJoinColumns = @JoinColumn(name = "students_id")
+    )
+    Set<User> students = new HashSet<>();
 }

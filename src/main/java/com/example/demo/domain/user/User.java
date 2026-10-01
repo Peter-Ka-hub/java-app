@@ -18,15 +18,19 @@ import java.util.UUID;
 @Table(name = "app_user")
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
-
     String firstName;
     String lastName;
     @Enumerated(EnumType.STRING)
     UserRole role;
     LocalDate dateOfBirth;
-    String PESEL;
+    String pesel;
 
-    @ManyToOne
+    @Column(nullable = false, unique = true)
+    String email;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_id")
     School school;
 }

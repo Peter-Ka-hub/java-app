@@ -1,5 +1,6 @@
 package com.example.demo.infrastructure.ports;
 
+import com.example.demo.api.common.NotFoundException;
 import com.example.demo.domain.user.User;
 
 import java.util.Optional;
@@ -12,7 +13,7 @@ import java.util.UUID;
 public interface UserRepositoryPort {
     Optional<User> findById(UUID id);
     default User getById(UUID id) {
-        return findById(id).orElseThrow();
+        return findById(id).orElseThrow(() -> new NotFoundException("User not found: " + id));
     }
-    User createUser();
+    User save(User user);
 }

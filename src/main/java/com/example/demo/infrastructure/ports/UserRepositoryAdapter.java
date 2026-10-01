@@ -4,17 +4,14 @@ import com.example.demo.domain.user.User;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.example.demo.domain.user.UserRole.STUDENT;
-
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-@Service
+@Component
 public class UserRepositoryAdapter implements UserRepositoryPort {
     UserRepository userRepository;
 
@@ -24,8 +21,7 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     }
 
     @Override
-    public User createUser() {
-        var user = new User(UUID.randomUUID(), "Jan", "Kowalski", STUDENT, LocalDate.now(), "", null);
+    public User save(User user) {
         return userRepository.save(user);
     }
 }

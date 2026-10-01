@@ -1,0 +1,1141 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Demo Application API",
+    "description": "OpenAPI specification for a Spring Boot demo application\n",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Ping",
+      "description": "API availability check"
+    },
+    {
+      "name": "Schools",
+      "description": "Managing schools"
+    },
+    {
+      "name": "Users",
+      "description": "Managing users"
+    },
+    {
+      "name": "Subjects",
+      "description": "Managing subjects"
+    },
+    {
+      "name": "Grades",
+      "description": "Managing grades"
+    }
+  ],
+  "paths": {
+    "/api/ping": {
+      "get": {
+        "tags": ["Ping"],
+        "summary": "Check API status",
+        "operationId": "ping",
+        "responses": {
+          "200": {
+            "description": "API is working correctly",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "API is currently working correctly"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/schools": {
+      "get": {
+        "tags": ["Schools"],
+        "summary": "Get all schools",
+        "operationId": "findAllSchools",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/SizeParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "School list",
+            "content": {
+              "application/json": {
+                "schema": {
+                    "$ref": "#/components/schemas/SchoolPageResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Schools"],
+        "summary": "Create a new school",
+        "operationId": "createSchool",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SchoolRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "School created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/schools/{id}": {
+      "get": {
+        "tags": ["Schools"],
+        "summary": "Get school by ID",
+        "operationId": "getSchoolById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "School data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Schools"],
+        "summary": "Update School by ID",
+        "operationId": "updateSchool",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SchoolRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "School updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Schools"],
+        "summary": "Delete school by ID",
+        "operationId": "deleteSchool",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "School deleted"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get all users",
+        "operationId": "findAllUsers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/SizeParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User list",
+            "content": {
+              "application/json": {
+                "schema": {
+                    "$ref": "#/components/schemas/UserPageResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Users"],
+        "summary": "Create a new user",
+        "operationId": "createUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/users/{id}":{
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get user by ID",
+        "operationId": "getUserById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update user by ID",
+        "operationId": "updateUser",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated",
+            "content": {
+             "application/json": {
+               "schema": {
+                 "$ref": "#/components/schemas/UserResponse"
+               }
+             }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },"delete": {
+        "tags": ["Users"],
+        "summary": "Delete user by ID",
+        "operationId": "deleteUser",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User deleted"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/subjects": {
+      "get": {
+        "tags": ["Subjects"],
+        "summary": "Get all subjects",
+        "operationId": "findAllSubjects",
+        "parameters": [
+          { "$ref": "#/components/parameters/PageParam" },
+          { "$ref": "#/components/parameters/SizeParam" }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of all subjects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubjectPageResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Subjects"],
+        "summary": "Create a new subject",
+        "operationId": "createSubject",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubjectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Subject created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubjectResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/subjects/{id}": {
+      "get": {
+        "tags": ["Subjects"],
+        "summary": "Get subject by ID",
+        "operationId": "getSubjectById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subject details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubjectResponse"
+                }
+              }
+            }
+          },
+          "404": {
+                  "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Subjects"],
+        "summary": "Update subject by ID",
+        "operationId": "updateSubject",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubjectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subject updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubjectResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Subjects"],
+        "summary": "Delete subject by ID",
+        "operationId": "deleteSubject",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Subject deleted"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/grades": {
+      "get": {
+        "tags": ["Grades"],
+        "summary": "Get all grades",
+        "operationId": "findAllGrades",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/SizeParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of grades",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GradePageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Grades"],
+        "summary": "Create new grade",
+        "operationId": "createGrade",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GradeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Grade created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GradeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/grades/{id}": {
+      "get": {
+        "tags": ["Grades"],
+        "summary": "Get a grade by ID",
+        "operationId": "getGradeById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Grade found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GradeResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Grades"],
+        "summary": "Update a grade by ID",
+        "operationId": "updateGrade",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GradeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Grade updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GradeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Grades"],
+        "summary": "Delete a grade by ID",
+        "operationId": "deleteGrade",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Grade deleted"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "UuidPathId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+      },
+      "PageParam": {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        }
+      },
+      "SizeParam": {
+        "name": "size",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 20
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request data",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "SchoolRequest": {
+        "type": "object",
+        "required": ["name", "address", "dateOfConstruction", "type"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "example": "Liceum Ogólnokształcące nr 1"
+          },
+          "address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "example": "ul. Szkolna 5, 00-001 Warszawa"
+          },
+          "dateOfConstruction": {
+            "type": "string",
+            "format": "date",
+            "example": "2000-09-01"
+          },
+          "type": {
+            "$ref": "#/components/schemas/SchoolType"
+          }
+        }
+      },
+      "SchoolResponse": {
+        "type": "object",
+        "required": ["id", "name", "address", "dateOfConstruction", "type"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "name": {
+            "type": "string",
+            "example": "Liceum Ogólnokształcące nr 1"
+          },
+          "address": {
+            "type": "string",
+            "example": "ul. Szkolna 5, 00-001 Warszawa"
+          },
+          "dateOfConstruction": {
+            "type": "string",
+            "format": "date",
+            "example": "2000-09-01"
+          },
+          "type": {
+            "$ref": "#/components/schemas/SchoolType"
+          }
+        }
+      },
+      "SchoolType": {
+        "type": "string",
+        "enum": ["PRIMARY", "SECONDARY", "TERTIARY"]
+      },
+      "SchoolPageResponse": {
+        "type": "object",
+        "required": ["items", "page", "size", "totalElements", "totalPages"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SchoolResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "example": 0
+          },
+          "size": {
+            "type": "integer",
+            "example": 20
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64",
+            "example": 120
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 6
+          }
+        }
+      },
+      "UserRequest": {
+        "type": "object",
+        "required": ["firstName", "lastName", "email", "role", "dateOfBirth"],
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "example": "Jan"
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "example": "Kowalski"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 50,
+            "example": "example@gmail.com"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "example": "2000-01-01"
+          },
+          "schoolId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          }
+        }
+      },
+      "UserResponse": {
+        "type": "object",
+        "required": ["id", "firstName", "lastName", "email", "role", "dateOfBirth"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "4fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "Jan"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Kowalski"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 50,
+            "example": "example@gmail.com"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "example": "2000-01-01"
+          },
+          "schoolId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          }
+        }
+      },
+      "UserRole": {
+        "type": "string",
+        "enum": ["STUDENT", "TEACHER", "ADMIN"]
+      },
+      "UserPageResponse": {
+        "type": "object",
+        "required": ["items", "page", "size", "totalElements", "totalPages"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "example": 0
+          },
+          "size": {
+            "type": "integer",
+            "example": 20
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64",
+            "example": 50
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 3
+          }
+        }
+      },
+      "SubjectRequest": {
+        "type": "object",
+        "required": ["name", "teacherId"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "example": "math"
+          },
+          "teacherId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "studentIds": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "SubjectResponse": {
+        "type": "object",
+        "required": ["id", "name", "teacherId", "studentIds"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "4fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "name": {
+            "type": "string",
+            "example": "math"
+          },
+          "teacherId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "4fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "studentIds": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "SubjectPageResponse": {
+        "type": "object",
+        "required": ["items", "page", "size", "totalElements", "totalPages"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubjectResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "example": 0
+          },
+          "size": {
+            "type": "integer",
+            "example": 20
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64",
+            "example": 50
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 3
+          }
+        }
+      },
+      "GradeRequest": {
+        "type": "object",
+        "required": ["score", "dateOfScore", "studentId", "subjectId"],
+        "properties": {
+          "score": {
+            "$ref": "#/components/schemas/GradeScore"
+          },
+          "dateOfScore": {
+            "type": "string",
+            "format": "date",
+            "example": "2000-01-01"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "subjectId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          }
+        }
+      },
+      "GradeResponse": {
+        "type": "object",
+        "required": ["id", "score", "dateOfScore", "studentId", "subjectId"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "4fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "score": {
+            "$ref": "#/components/schemas/GradeScore"
+          },
+          "dateOfScore": {
+            "type": "string",
+            "format": "date",
+            "example": "2000-01-01"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "subjectId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          }
+        }
+      },
+      "GradeScore": {
+        "type": "string",
+        "enum": ["A", "B", "C", "D", "E", "F"]
+      },
+      "GradePageResponse": {
+        "type": "object",
+        "required": ["items", "page", "size", "totalElements", "totalPages"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GradeResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "example": 0
+          },
+          "size": {
+            "type": "integer",
+            "example": 20
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64",
+            "example": 120
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 6
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["timestamp", "status", "error", "message", "path"],
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-09-15T12:30:00Z"
+          },
+          "status": {
+            "type": "integer",
+            "example": 404
+          },
+          "error": {
+            "type": "string",
+            "example": "Not Found"
+          },
+          "message": {
+            "type": "string",
+            "example": "Resource not found"
+          },
+          "path": {
+            "type": "string",
+            "example": "/api/schools/3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["name: must not be blank"]
+          }
+        }
+      }
+    }
+  }
+}
