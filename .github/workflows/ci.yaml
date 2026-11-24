@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Java 25 / PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Java 25
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '25'
+          check-latest: true
+      - name: Set up Gradle and validate wrapper
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        with:
+          cache-provider: basic
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - name: Verify Docker for Testcontainers
+        run: docker info
+      - name: Set up Node for frontend tests
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+      - name: Run JavaScript unit tests
+        run: node --test src/test/javascript/*.test.cjs
+      - name: Test grade history navigation in Chromium
+        working-directory: src/test/browser
+        run: |
+          npm ci
+          npm run install:chromium -- --with-deps
+          npm test
+      - name: Run quality checks and PostgreSQL integration tests
+        run: ./gradlew --no-daemon check integrationTest bootJar
+      - name: Build runtime image
+        run: docker build --tag school-diary:ci .
+      - name: Compute vulnerability database cache date
+        id: cache-date
+        run: printf 'date=%s\n' "$(date -u +%F)" >> "$GITHUB_OUTPUT"
+      - name: Cache Trivy vulnerability databases
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/trivy-cache
+          key: ${{ runner.os }}-trivy-0.76.1-${{ steps.cache-date.outputs.date }}
+          restore-keys: |
+            ${{ runner.os }}-trivy-0.76.1-
+      - name: Export image for isolated vulnerability scanning
+        run: docker save --output "$RUNNER_TEMP/school-diary-image.tar" school-diary:ci
+      - name: Scan runtime image for fixable HIGH and CRITICAL vulnerabilities
+        timeout-minutes: 12
+        run: |
+          mkdir -p "$RUNNER_TEMP/trivy-cache" "$RUNNER_TEMP/trivy-scratch" "$GITHUB_WORKSPACE/build/reports/security"
+          docker run --rm --read-only \
+            --user "$(id -u):$(id -g)" \
+            --cap-drop ALL --security-opt no-new-privileges:true \
+            --mount "type=bind,source=$RUNNER_TEMP/school-diary-image.tar,target=/image.tar,readonly" \
+            --mount "type=bind,source=$RUNNER_TEMP/trivy-cache,target=/cache" \
+            --mount "type=bind,source=$RUNNER_TEMP/trivy-scratch,target=/tmp" \
+            --mount "type=bind,source=$GITHUB_WORKSPACE/build/reports/security,target=/reports" \
+            aquasec/trivy:0.76.1 image \
+            --input /image.tar --cache-dir /cache --scanners vuln \
+            --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 \
+            --timeout 10m --no-progress --format json --output /reports/trivy.json
+      - name: Upload verification and vulnerability reports
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: verification-reports
+          path: |
+            build/reports/
+            build/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+

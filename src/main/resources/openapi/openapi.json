@@ -1,14 +1,14 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Demo Application API",
-    "description": "OpenAPI specification for a Spring Boot demo application\n",
+    "title": "School Diary API",
+    "description": "School-scoped academic records with session authentication, CSRF protection, enrollment history and audited grades. See README for role policies.",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "http://localhost:8080",
-      "description": "Local server"
+      "url": "/",
+      "description": "Current server"
     }
   ],
   "tags": [
@@ -31,12 +31,38 @@
     {
       "name": "Grades",
       "description": "Managing grades"
+    },
+    {
+      "name": "AcademicYears",
+      "description": "Managing academicyears"
+    },
+    {
+      "name": "Classes",
+      "description": "Managing classes"
+    },
+    {
+      "name": "Enrollments",
+      "description": "Managing enrollments"
+    },
+    {
+      "name": "Authentication",
+      "description": "Session login and CSRF token lifecycle. Fetch a new CSRF token after login."
+    },
+    {
+      "name": "Invitations",
+      "description": "One-time registration invitations for students and teachers"
+    },
+    {
+      "name": "Attendance",
+      "description": "Lesson rosters, attendance and finalized reports"
     }
   ],
   "paths": {
     "/api/ping": {
       "get": {
-        "tags": ["Ping"],
+        "tags": [
+          "Ping"
+        ],
         "summary": "Check API status",
         "operationId": "ping",
         "responses": {
@@ -51,12 +77,15 @@
               }
             }
           }
-        }
+        },
+        "security": []
       }
     },
     "/api/schools": {
       "get": {
-        "tags": ["Schools"],
+        "tags": [
+          "Schools"
+        ],
         "summary": "Get all schools",
         "operationId": "findAllSchools",
         "parameters": [
@@ -73,18 +102,32 @@
             "content": {
               "application/json": {
                 "schema": {
-                    "$ref": "#/components/schemas/SchoolPageResponse"
+                  "$ref": "#/components/schemas/SchoolPageResponse"
                 }
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       },
       "post": {
-        "tags": ["Schools"],
+        "tags": [
+          "Schools"
+        ],
         "summary": "Create a new school",
         "operationId": "createSchool",
         "requestBody": {
@@ -113,13 +156,33 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
-        }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
       }
     },
     "/api/schools/{id}": {
       "get": {
-        "tags": ["Schools"],
+        "tags": [
+          "Schools"
+        ],
         "summary": "Get school by ID",
         "operationId": "getSchoolById",
         "parameters": [
@@ -138,16 +201,27 @@
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       },
       "put": {
-        "tags": ["Schools"],
+        "tags": [
+          "Schools"
+        ],
         "summary": "Update School by ID",
         "operationId": "updateSchool",
         "parameters": [
@@ -160,7 +234,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SchoolRequest"
+                "$ref": "#/components/schemas/SchoolUpdateRequest"
               }
             }
           }
@@ -184,11 +258,28 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
-        }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
       },
       "delete": {
-        "tags": ["Schools"],
+        "tags": [
+          "Schools"
+        ],
         "summary": "Delete school by ID",
         "operationId": "deleteSchool",
         "parameters": [
@@ -200,18 +291,38 @@
           "204": {
             "description": "School deleted"
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
-        }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
       }
     },
     "/api/users": {
       "get": {
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "Get all users",
         "operationId": "findAllUsers",
         "parameters": [
@@ -228,18 +339,32 @@
             "content": {
               "application/json": {
                 "schema": {
-                    "$ref": "#/components/schemas/UserPageResponse"
+                  "$ref": "#/components/schemas/UserPageResponse"
                 }
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       },
       "post": {
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "Create a new user",
         "operationId": "createUser",
         "requestBody": {
@@ -247,7 +372,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UserRequest"
+                "$ref": "#/components/schemas/UserCreateRequest"
               }
             }
           }
@@ -266,15 +391,35 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
-        }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
       }
     },
-    "/api/users/{id}":{
+    "/api/users/{id}": {
       "get": {
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "Get user by ID",
         "operationId": "getUserById",
         "parameters": [
@@ -293,16 +438,27 @@
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       },
       "put": {
-        "tags": ["Users"],
+        "tags": [
+          "Users"
+        ],
         "summary": "Update user by ID",
         "operationId": "updateUser",
         "parameters": [
@@ -315,7 +471,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UserRequest"
+                "$ref": "#/components/schemas/UserUpdateRequest"
               }
             }
           }
@@ -324,11 +480,11 @@
           "200": {
             "description": "User updated",
             "content": {
-             "application/json": {
-               "schema": {
-                 "$ref": "#/components/schemas/UserResponse"
-               }
-             }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
             }
           },
           "400": {
@@ -337,12 +493,30 @@
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
-        }
-      },"delete": {
-        "tags": ["Users"],
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
         "summary": "Delete user by ID",
         "operationId": "deleteUser",
         "parameters": [
@@ -354,23 +528,47 @@
           "204": {
             "description": "User deleted"
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
-        }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
       }
     },
     "/api/subjects": {
       "get": {
-        "tags": ["Subjects"],
+        "tags": [
+          "Subjects"
+        ],
         "summary": "Get all subjects",
         "operationId": "findAllSubjects",
         "parameters": [
-          { "$ref": "#/components/parameters/PageParam" },
-          { "$ref": "#/components/parameters/SizeParam" }
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/SizeParam"
+          }
         ],
         "responses": {
           "200": {
@@ -383,13 +581,27 @@
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       },
       "post": {
-        "tags": ["Subjects"],
+        "tags": [
+          "Subjects"
+        ],
         "summary": "Create a new subject",
         "operationId": "createSubject",
         "requestBody": {
@@ -416,15 +628,35 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
-        }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
       }
     },
     "/api/subjects/{id}": {
       "get": {
-        "tags": ["Subjects"],
+        "tags": [
+          "Subjects"
+        ],
         "summary": "Get subject by ID",
         "operationId": "getSubjectById",
         "parameters": [
@@ -443,16 +675,27 @@
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "404": {
-                  "$ref": "#/components/responses/NotFound"
+            "$ref": "#/components/responses/NotFound"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       },
       "put": {
-        "tags": ["Subjects"],
+        "tags": [
+          "Subjects"
+        ],
         "summary": "Update subject by ID",
         "operationId": "updateSubject",
         "parameters": [
@@ -465,7 +708,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SubjectRequest"
+                "$ref": "#/components/schemas/SubjectUpdateRequest"
               }
             }
           }
@@ -489,11 +732,28 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
-        }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
       },
       "delete": {
-        "tags": ["Subjects"],
+        "tags": [
+          "Subjects"
+        ],
         "summary": "Delete subject by ID",
         "operationId": "deleteSubject",
         "parameters": [
@@ -505,18 +765,38 @@
           "204": {
             "description": "Subject deleted"
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
-        }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
       }
     },
     "/api/grades": {
       "get": {
-        "tags": ["Grades"],
+        "tags": [
+          "Grades"
+        ],
         "summary": "Get all grades",
         "operationId": "findAllGrades",
         "parameters": [
@@ -543,11 +823,22 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       },
       "post": {
-        "tags": ["Grades"],
+        "tags": [
+          "Grades"
+        ],
         "summary": "Create new grade",
         "operationId": "createGrade",
         "requestBody": {
@@ -574,15 +865,35 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
-        }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
       }
     },
     "/api/grades/{id}": {
       "get": {
-        "tags": ["Grades"],
+        "tags": [
+          "Grades"
+        ],
         "summary": "Get a grade by ID",
         "operationId": "getGradeById",
         "parameters": [
@@ -601,16 +912,27 @@
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       },
       "put": {
-        "tags": ["Grades"],
+        "tags": [
+          "Grades"
+        ],
         "summary": "Update a grade by ID",
         "operationId": "updateGrade",
         "parameters": [
@@ -623,7 +945,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GradeRequest"
+                "$ref": "#/components/schemas/GradeUpdateRequest"
               }
             }
           }
@@ -647,11 +969,28 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
-        }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
       },
       "delete": {
-        "tags": ["Grades"],
+        "tags": [
+          "Grades"
+        ],
         "summary": "Delete a grade by ID",
         "operationId": "deleteGrade",
         "parameters": [
@@ -663,8 +1002,1515 @@
           "204": {
             "description": "Grade deleted"
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
+      }
+    },
+    "/api/academic-years": {
+      "get": {
+        "tags": [
+          "AcademicYears"
+        ],
+        "operationId": "findAllAcademicYears",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcademicYearPageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/SizeParam"
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "AcademicYears"
+        ],
+        "operationId": "createAcademicYear",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcademicYearResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcademicYearRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
+      }
+    },
+    "/api/academic-years/{id}": {
+      "get": {
+        "tags": [
+          "AcademicYears"
+        ],
+        "operationId": "getAcademicYearById",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcademicYearResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "AcademicYears"
+        ],
+        "operationId": "updateAcademicYear",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcademicYearResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcademicYearUpdateRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "AcademicYears"
+        ],
+        "operationId": "deleteAcademicYear",
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
+      }
+    },
+    "/api/classes": {
+      "get": {
+        "tags": [
+          "Classes"
+        ],
+        "operationId": "findAllClasses",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassPageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/SizeParam"
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Classes"
+        ],
+        "operationId": "createClass",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
+      }
+    },
+    "/api/classes/{id}": {
+      "get": {
+        "tags": [
+          "Classes"
+        ],
+        "operationId": "getClassById",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Classes"
+        ],
+        "operationId": "updateClass",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassUpdateRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Classes"
+        ],
+        "operationId": "deleteClass",
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
+      }
+    },
+    "/api/enrollments": {
+      "get": {
+        "tags": [
+          "Enrollments"
+        ],
+        "operationId": "findAllEnrollments",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollmentPageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/SizeParam"
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Enrollments"
+        ],
+        "operationId": "createEnrollment",
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollmentRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
+      }
+    },
+    "/api/enrollments/{id}": {
+      "get": {
+        "tags": [
+          "Enrollments"
+        ],
+        "operationId": "getEnrollmentById",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Enrollments"
+        ],
+        "operationId": "updateEnrollment",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollmentUpdateRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
+      }
+    },
+    "/api/grades/{id}/history": {
+      "get": {
+        "tags": [
+          "Grades"
+        ],
+        "operationId": "getGradeHistory",
+        "responses": {
+          "200": {
+            "description": "Append-only grade history, available after deletion",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GradeRevisionResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "login",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "429": {
+            "description": "Login attempt limit exceeded",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until another attempt may be made",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "csrfToken": []
+          }
+        ]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/auth/csrf": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "csrf",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsrfResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "logout",
+        "responses": {
+          "204": {
+            "description": "Logged out"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
+      }
+    },
+    "/api/invitations": {
+      "get": {
+        "tags": [
+          "Invitations"
+        ],
+        "operationId": "listInvitations",
+        "summary": "List invitations visible to the current administrator",
+        "description": "School administrators see their school. Global administrators see invitations for all schools.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/SizeParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invitation page without tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationPageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Invitations"
+        ],
+        "operationId": "createInvitation",
+        "summary": "Invite a student or teacher to a school",
+        "description": "The token is returned once and expires after 24 hours. Share the link privately with the intended recipient.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invitation and one-time token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationCreatedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
+      }
+    },
+    "/api/invitations/{id}/revoke": {
+      "post": {
+        "tags": [
+          "Invitations"
+        ],
+        "operationId": "revokeInvitation",
+        "summary": "Revoke a pending invitation within the administrator scope",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Invitation revoked"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ]
+      }
+    },
+    "/api/invitations/accept": {
+      "post": {
+        "tags": [
+          "Invitations"
+        ],
+        "operationId": "acceptInvitation",
+        "summary": "Create an account from a valid invitation",
+        "description": "The invitation determines the email, school and role. Obtain CSRF state before submitting. A successful activation is followed by normal login.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationAcceptRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Account created and invitation consumed"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "csrfToken": []
+          }
+        ]
+      }
+    },
+    "/api/subjects/{id}/attendance-lessons": {
+      "get": {
+        "tags": [
+          "Attendance"
+        ],
+        "operationId": "listAttendanceLessons",
+        "summary": "List attendance lessons for a subject",
+        "description": "Available to the assigned teacher and in-scope administrators.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          },
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/SizeParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lesson page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceLessonPageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Attendance"
+        ],
+        "operationId": "createAttendanceLesson",
+        "summary": "Register a lesson for today",
+        "description": "Uses the server date in the academic year and snapshots current active enrollments. The lesson number distinguishes lessons on the same day.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceLessonCreateRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Draft lesson and captured roster",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceLessonResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/attendance/lessons/{id}": {
+      "get": {
+        "tags": [
+          "Attendance"
+        ],
+        "operationId": "getAttendanceLesson",
+        "summary": "Read a lesson and its attendance roster",
+        "description": "Available to the assigned teacher and in-scope administrators. Includes status corrections.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lesson and roster",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceLessonResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Attendance"
+        ],
+        "operationId": "saveAttendanceLesson",
+        "summary": "Save the full roster against its current version",
+        "description": "Send every captured student once. Drafts allow unmarked students. Finalized lessons require every status and can only be corrected as FINALIZED.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceLessonSaveRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saved attendance and new version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceLessonResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/attendance/me": {
+      "get": {
+        "tags": [
+          "Attendance"
+        ],
+        "operationId": "getMyAttendance",
+        "summary": "Read own finalized attendance for a period",
+        "description": "Student only. Counts cover the full period and rows are paginated. Late counts toward attendance percentage.",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "First included lesson date. The period may cover up to 366 dates."
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Last included lesson date."
+          },
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/SizeParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Personal attendance report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceReportResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/attendance/report": {
+      "get": {
+        "tags": [
+          "Attendance"
+        ],
+        "operationId": "getSchoolAttendanceReport",
+        "summary": "Read a scoped school attendance report",
+        "description": "Administrator only. Filters apply to finalized student-lesson records. Class uses the captured lesson class.",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "First included lesson date. The period may cover up to 366 dates."
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Last included lesson date."
+          },
+          {
+            "name": "schoolId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Global administrators may select a school. School administrators are scoped to their school."
+          },
+          {
+            "name": "classId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Class captured at lesson creation."
+          },
+          {
+            "name": "subjectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Subject for the lesson."
+          },
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/SizeParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "School attendance report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceReportResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/api/subjects/{id}/enrollments/by-email": {
+      "post": {
+        "tags": [
+          "Enrollments"
+        ],
+        "operationId": "createEnrollmentByEmail",
+        "summary": "Enroll an enabled student by exact email",
+        "description": "Uses the assigned subject and school scope. The student must already have an enabled account in that school.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidPathId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollmentByEmailRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "sessionAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Enrollment created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -737,38 +2583,94 @@
             }
           }
         }
+      },
+      "Conflict": {
+        "description": "Request conflicts with existing data, for example a duplicate email or a resource still in use.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Authentication required or invalid credentials",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Access denied or missing/invalid CSRF token",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
       }
     },
     "schemas": {
       "SchoolRequest": {
         "type": "object",
-        "required": ["name", "address", "dateOfConstruction", "type"],
+        "required": [
+          "name",
+          "address",
+          "dateOfConstruction",
+          "type"
+        ],
         "properties": {
           "name": {
             "type": "string",
             "minLength": 1,
             "maxLength": 50,
-            "example": "Liceum Ogólnokształcące nr 1"
+            "example": "Liceum Ogólnokształcące nr 1",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Must contain at least one non-whitespace character."
           },
           "address": {
             "type": "string",
             "minLength": 1,
             "maxLength": 200,
-            "example": "ul. Szkolna 5, 00-001 Warszawa"
+            "example": "ul. Szkolna 5, 00-001 Warszawa",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Must contain at least one non-whitespace character."
           },
           "dateOfConstruction": {
             "type": "string",
             "format": "date",
-            "example": "2000-09-01"
+            "example": "2000-09-01",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.PastOrPresent",
+            "description": "Must not be in the future."
           },
           "type": {
             "$ref": "#/components/schemas/SchoolType"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Current resource version. Required on updates to prevent lost writes.",
+            "nullable": true
           }
-        }
+        },
+        "additionalProperties": false
       },
       "SchoolResponse": {
         "type": "object",
-        "required": ["id", "name", "address", "dateOfConstruction", "type"],
+        "required": [
+          "id",
+          "name",
+          "address",
+          "dateOfConstruction",
+          "type",
+          "version"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -790,16 +2692,32 @@
           },
           "type": {
             "$ref": "#/components/schemas/SchoolType"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Current resource version. Required on updates to prevent lost writes."
           }
         }
       },
       "SchoolType": {
         "type": "string",
-        "enum": ["PRIMARY", "SECONDARY", "TERTIARY"]
+        "enum": [
+          "PRIMARY",
+          "SECONDARY",
+          "TERTIARY"
+        ]
       },
       "SchoolPageResponse": {
         "type": "object",
-        "required": ["items", "page", "size", "totalElements", "totalPages"],
+        "required": [
+          "items",
+          "page",
+          "size",
+          "totalElements",
+          "totalPages"
+        ],
         "properties": {
           "items": {
             "type": "array",
@@ -828,25 +2746,38 @@
       },
       "UserRequest": {
         "type": "object",
-        "required": ["firstName", "lastName", "email", "role", "dateOfBirth"],
+        "required": [
+          "firstName",
+          "lastName",
+          "email",
+          "role",
+          "dateOfBirth"
+        ],
         "properties": {
           "firstName": {
             "type": "string",
             "minLength": 1,
             "maxLength": 50,
-            "example": "Jan"
+            "example": "Jan",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Must contain at least one non-whitespace character."
           },
           "lastName": {
             "type": "string",
             "minLength": 1,
             "maxLength": 50,
-            "example": "Kowalski"
+            "example": "Kowalski",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Must contain at least one non-whitespace character."
           },
           "email": {
             "type": "string",
             "format": "email",
             "maxLength": 50,
-            "example": "example@gmail.com"
+            "example": "example@gmail.com",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Required valid email address. Stored in lowercase; uniqueness is case-insensitive.",
+            "minLength": 1
           },
           "role": {
             "$ref": "#/components/schemas/UserRole"
@@ -854,18 +2785,53 @@
           "dateOfBirth": {
             "type": "string",
             "format": "date",
-            "example": "2000-01-01"
+            "example": "2000-01-01",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.Past",
+            "description": "Must be in the past."
           },
           "schoolId": {
             "type": "string",
             "format": "uuid",
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "nullable": true,
+            "description": "Required for students, teachers and school administrators. A global administrator has no school."
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Current resource version. Required on updates to prevent lost writes.",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "writeOnly": true,
+            "minLength": 12,
+            "maxLength": 128,
+            "description": "Required when creating a user; optional admin password reset on update.",
+            "nullable": true
+          },
+          "enabled": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Defaults to true on creation. Omit or send null on update to keep the current value."
           }
-        }
+        },
+        "additionalProperties": false
       },
       "UserResponse": {
         "type": "object",
-        "required": ["id", "firstName", "lastName", "email", "role", "dateOfBirth"],
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "email",
+          "role",
+          "dateOfBirth",
+          "version",
+          "enabled"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -897,17 +2863,37 @@
           "schoolId": {
             "type": "string",
             "format": "uuid",
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Current resource version. Required on updates to prevent lost writes."
+          },
+          "enabled": {
+            "type": "boolean"
           }
         }
       },
       "UserRole": {
         "type": "string",
-        "enum": ["STUDENT", "TEACHER", "ADMIN"]
+        "enum": [
+          "STUDENT",
+          "TEACHER",
+          "ADMIN"
+        ]
       },
       "UserPageResponse": {
         "type": "object",
-        "required": ["items", "page", "size", "totalElements", "totalPages"],
+        "required": [
+          "items",
+          "page",
+          "size",
+          "totalElements",
+          "totalPages"
+        ],
         "properties": {
           "items": {
             "type": "array",
@@ -936,32 +2922,60 @@
       },
       "SubjectRequest": {
         "type": "object",
-        "required": ["name", "teacherId"],
+        "required": [
+          "name",
+          "teacherId",
+          "schoolId",
+          "academicYearId"
+        ],
         "properties": {
           "name": {
             "type": "string",
             "minLength": 1,
             "maxLength": 50,
-            "example": "math"
+            "example": "math",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Must contain at least one non-whitespace character."
           },
           "teacherId": {
             "type": "string",
             "format": "uuid",
             "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
           },
-          "studentIds": {
-            "type": "array",
-            "uniqueItems": true,
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Current resource version. Required on updates to prevent lost writes.",
+            "nullable": true
+          },
+          "schoolId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "academicYearId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
           }
-        }
+        },
+        "additionalProperties": false
       },
       "SubjectResponse": {
         "type": "object",
-        "required": ["id", "name", "teacherId", "studentIds"],
+        "required": [
+          "id",
+          "name",
+          "teacherId",
+          "studentIds",
+          "version",
+          "schoolId",
+          "academicYearId"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -984,12 +2998,37 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Current resource version. Required on updates to prevent lost writes."
+          },
+          "schoolId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "academicYearId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
           }
         }
       },
       "SubjectPageResponse": {
         "type": "object",
-        "required": ["items", "page", "size", "totalElements", "totalPages"],
+        "required": [
+          "items",
+          "page",
+          "size",
+          "totalElements",
+          "totalPages"
+        ],
         "properties": {
           "items": {
             "type": "array",
@@ -1018,7 +3057,12 @@
       },
       "GradeRequest": {
         "type": "object",
-        "required": ["score", "dateOfScore", "studentId", "subjectId"],
+        "required": [
+          "score",
+          "dateOfScore",
+          "studentId",
+          "subjectId"
+        ],
         "properties": {
           "score": {
             "$ref": "#/components/schemas/GradeScore"
@@ -1026,7 +3070,9 @@
           "dateOfScore": {
             "type": "string",
             "format": "date",
-            "example": "2000-01-01"
+            "example": "2000-01-01",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.PastOrPresent",
+            "description": "Must not be in the future."
           },
           "studentId": {
             "type": "string",
@@ -1037,12 +3083,27 @@
             "type": "string",
             "format": "uuid",
             "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Current resource version. Required on updates to prevent lost writes.",
+            "nullable": true
           }
-        }
+        },
+        "additionalProperties": false
       },
       "GradeResponse": {
         "type": "object",
-        "required": ["id", "score", "dateOfScore", "studentId", "subjectId"],
+        "required": [
+          "id",
+          "score",
+          "dateOfScore",
+          "studentId",
+          "subjectId",
+          "version"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -1066,16 +3127,47 @@
             "type": "string",
             "format": "uuid",
             "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Current resource version. Required on updates to prevent lost writes."
+          },
+          "gradedById": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
       "GradeScore": {
         "type": "string",
-        "enum": ["A", "B", "C", "D", "E", "F"]
+        "enum": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F"
+        ]
       },
       "GradePageResponse": {
         "type": "object",
-        "required": ["items", "page", "size", "totalElements", "totalPages"],
+        "required": [
+          "items",
+          "page",
+          "size",
+          "totalElements",
+          "totalPages"
+        ],
         "properties": {
           "items": {
             "type": "array",
@@ -1104,7 +3196,13 @@
       },
       "ErrorResponse": {
         "type": "object",
-        "required": ["timestamp", "status", "error", "message", "path"],
+        "required": [
+          "timestamp",
+          "status",
+          "error",
+          "message",
+          "path"
+        ],
         "properties": {
           "timestamp": {
             "type": "string",
@@ -1132,10 +3230,1206 @@
             "items": {
               "type": "string"
             },
-            "example": ["name: must not be blank"]
+            "example": [
+              "name: must not be blank"
+            ]
           }
         }
+      },
+      "AcademicYearRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "schoolId",
+          "startDate",
+          "endDate"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank"
+          },
+          "schoolId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Current resource version. Required on updates to prevent lost writes.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClassRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "schoolId",
+          "academicYearId"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank"
+          },
+          "schoolId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "academicYearId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Current resource version. Required on updates to prevent lost writes.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EnrollmentRequest": {
+        "type": "object",
+        "required": [
+          "subjectId",
+          "studentId",
+          "joinedOn"
+        ],
+        "properties": {
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "joinedOn": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EnrollmentUpdateRequest": {
+        "type": "object",
+        "required": [
+          "status",
+          "version"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "WITHDRAWN"
+            ]
+          },
+          "leftOn": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Current resource version. Required on updates to prevent lost writes."
+          }
+        },
+        "additionalProperties": false
+      },
+      "AcademicYearResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "schoolId",
+          "startDate",
+          "endDate",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank"
+          },
+          "schoolId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Current resource version. Required on updates to prevent lost writes."
+          }
+        }
+      },
+      "ClassResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "schoolId",
+          "academicYearId",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank"
+          },
+          "schoolId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "academicYearId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Current resource version. Required on updates to prevent lost writes."
+          }
+        }
+      },
+      "EnrollmentResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "subjectId",
+          "studentId",
+          "joinedOn",
+          "status",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "joinedOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "leftOn": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "WITHDRAWN"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Current resource version. Required on updates to prevent lost writes."
+          }
+        }
+      },
+      "GradeRevisionResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "gradeId",
+          "score",
+          "dateOfScore",
+          "studentId",
+          "subjectId",
+          "changedById",
+          "changedAt",
+          "action"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "gradeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "score": {
+            "$ref": "#/components/schemas/GradeScore"
+          },
+          "dateOfScore": {
+            "type": "string",
+            "format": "date"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "changedById": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "changedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "UPDATED",
+              "DELETED"
+            ]
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1,
+            "maxLength": 50,
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 1,
+            "maxLength": 128,
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CsrfResponse": {
+        "type": "object",
+        "required": [
+          "token",
+          "headerName",
+          "parameterName"
+        ],
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "headerName": {
+            "type": "string"
+          },
+          "parameterName": {
+            "type": "string"
+          }
+        }
+      },
+      "AcademicYearPageResponse": {
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "size",
+          "totalElements",
+          "totalPages"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AcademicYearResponse"
+            }
+          },
+          "page": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer"
+          }
+        }
+      },
+      "ClassPageResponse": {
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "size",
+          "totalElements",
+          "totalPages"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassResponse"
+            }
+          },
+          "page": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer"
+          }
+        }
+      },
+      "EnrollmentPageResponse": {
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "size",
+          "totalElements",
+          "totalPages"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EnrollmentResponse"
+            }
+          },
+          "page": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer"
+          }
+        }
+      },
+      "InvitationRole": {
+        "type": "string",
+        "enum": [
+          "STUDENT",
+          "TEACHER"
+        ]
+      },
+      "InvitationStatus": {
+        "type": "string",
+        "enum": [
+          "PENDING",
+          "ACCEPTED",
+          "REVOKED",
+          "EXPIRED"
+        ]
+      },
+      "InvitationCreateRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "role"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 50,
+            "example": "example@gmail.com",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Required valid email address. Stored in lowercase; uniqueness is case-insensitive.",
+            "minLength": 1
+          },
+          "role": {
+            "$ref": "#/components/schemas/InvitationRole"
+          },
+          "schoolId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Defaults to the current school for a school administrator. Required for a global administrator."
+          }
+        }
+      },
+      "InvitationAcceptRequest": {
+        "type": "object",
+        "required": [
+          "token",
+          "firstName",
+          "lastName",
+          "dateOfBirth",
+          "password"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 43,
+            "pattern": "^[A-Za-z0-9_-]{43}$",
+            "writeOnly": true,
+            "description": "Token received in the invitation link."
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "example": "Jan",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Must contain at least one non-whitespace character."
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "example": "Kowalski",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Must contain at least one non-whitespace character."
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "example": "2000-01-01",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.Past",
+            "description": "Must be in the past."
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "writeOnly": true,
+            "minLength": 12,
+            "maxLength": 128,
+            "description": "Password for the new account.",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank"
+          }
+        }
+      },
+      "InvitationResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "role",
+          "schoolId",
+          "expiresAt",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "$ref": "#/components/schemas/InvitationRole"
+          },
+          "schoolId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InvitationStatus"
+          }
+        }
+      },
+      "InvitationCreatedResponse": {
+        "type": "object",
+        "required": [
+          "invitation",
+          "token"
+        ],
+        "properties": {
+          "invitation": {
+            "$ref": "#/components/schemas/InvitationResponse"
+          },
+          "token": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 43,
+            "pattern": "^[A-Za-z0-9_-]{43}$",
+            "description": "Returned only when the invitation is created."
+          }
+        }
+      },
+      "InvitationPageResponse": {
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "size",
+          "totalElements",
+          "totalPages"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvitationResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "example": 0
+          },
+          "size": {
+            "type": "integer",
+            "example": 20
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64",
+            "example": 50
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 3
+          }
+        }
+      },
+      "AttendanceMark": {
+        "type": "string",
+        "enum": [
+          "PRESENT",
+          "ABSENT",
+          "LATE"
+        ]
+      },
+      "AttendanceState": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "FINALIZED"
+        ]
+      },
+      "AttendanceLessonCreateRequest": {
+        "type": "object",
+        "required": [
+          "lessonNumber"
+        ],
+        "properties": {
+          "lessonNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99
+          }
+        },
+        "additionalProperties": false
+      },
+      "AttendanceEntryUpdate": {
+        "type": "object",
+        "required": [
+          "studentId"
+        ],
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^(PRESENT|ABSENT|LATE)$",
+            "description": "Null or omitted for an unmarked student in a draft."
+          }
+        },
+        "additionalProperties": false
+      },
+      "AttendanceLessonSaveRequest": {
+        "type": "object",
+        "required": [
+          "version",
+          "state",
+          "entries"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "state": {
+            "$ref": "#/components/schemas/AttendanceState"
+          },
+          "entries": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/AttendanceEntryUpdate"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "AttendanceLessonSummaryResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "subjectId",
+          "schoolId",
+          "lessonDate",
+          "lessonNumber",
+          "state",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "schoolId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "lessonDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "lessonNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99
+          },
+          "state": {
+            "$ref": "#/components/schemas/AttendanceState"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "AttendanceLessonPageResponse": {
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "size",
+          "totalElements",
+          "totalPages"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttendanceLessonSummaryResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "example": 0
+          },
+          "size": {
+            "type": "integer",
+            "example": 20
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64",
+            "example": 50
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 3
+          }
+        }
+      },
+      "AttendanceCorrectionResponse": {
+        "type": "object",
+        "required": [
+          "previousStatus",
+          "newStatus",
+          "changedById",
+          "changedAt"
+        ],
+        "properties": {
+          "previousStatus": {
+            "$ref": "#/components/schemas/AttendanceMark"
+          },
+          "newStatus": {
+            "$ref": "#/components/schemas/AttendanceMark"
+          },
+          "changedById": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "changedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AttendanceEntryResponse": {
+        "type": "object",
+        "required": [
+          "studentId",
+          "firstName",
+          "lastName",
+          "corrections"
+        ],
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^(PRESENT|ABSENT|LATE)$",
+            "description": "Null or omitted for an unmarked student in a draft."
+          },
+          "corrections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttendanceCorrectionResponse"
+            }
+          }
+        }
+      },
+      "AttendanceLessonResponse": {
+        "type": "object",
+        "required": [
+          "lesson",
+          "entries"
+        ],
+        "properties": {
+          "lesson": {
+            "$ref": "#/components/schemas/AttendanceLessonSummaryResponse"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttendanceEntryResponse"
+            }
+          }
+        }
+      },
+      "AttendanceTotalsResponse": {
+        "type": "object",
+        "required": [
+          "present",
+          "absent",
+          "late",
+          "total"
+        ],
+        "properties": {
+          "present": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "absent": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "late": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "attendancePercentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "nullable": true,
+            "description": "(Present + late) / total × 100. Null when there are no finalized entries."
+          }
+        }
+      },
+      "AttendanceReportEntryResponse": {
+        "type": "object",
+        "required": [
+          "lessonId",
+          "subjectId",
+          "subjectName",
+          "schoolId",
+          "lessonDate",
+          "lessonNumber",
+          "studentId",
+          "firstName",
+          "lastName",
+          "status"
+        ],
+        "properties": {
+          "lessonId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectName": {
+            "type": "string"
+          },
+          "schoolId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "className": {
+            "type": "string",
+            "nullable": true
+          },
+          "lessonDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "lessonNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AttendanceMark"
+          }
+        }
+      },
+      "AttendanceReportPageResponse": {
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "size",
+          "totalElements",
+          "totalPages"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttendanceReportEntryResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "example": 0
+          },
+          "size": {
+            "type": "integer",
+            "example": 20
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64",
+            "example": 50
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 3
+          }
+        }
+      },
+      "AttendanceReportResponse": {
+        "type": "object",
+        "required": [
+          "summary",
+          "entries"
+        ],
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/AttendanceTotalsResponse"
+          },
+          "entries": {
+            "$ref": "#/components/schemas/AttendanceReportPageResponse"
+          }
+        }
+      },
+      "EnrollmentByEmailRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "joinedOn"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1,
+            "maxLength": 50,
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank"
+          },
+          "joinedOn": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SchoolUpdateRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SchoolRequest"
+          },
+          {
+            "type": "object",
+            "required": [
+              "version"
+            ],
+            "properties": {
+              "version": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "description": "Current resource version. Required on updates to prevent lost writes."
+              }
+            }
+          }
+        ]
+      },
+      "GradeUpdateRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GradeRequest"
+          },
+          {
+            "type": "object",
+            "required": [
+              "version"
+            ],
+            "properties": {
+              "version": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "description": "Current resource version. Required on updates to prevent lost writes."
+              }
+            }
+          }
+        ]
+      },
+      "ClassUpdateRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ClassRequest"
+          },
+          {
+            "type": "object",
+            "required": [
+              "version"
+            ],
+            "properties": {
+              "version": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "description": "Current resource version. Required on updates to prevent lost writes."
+              }
+            }
+          }
+        ]
+      },
+      "AcademicYearUpdateRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AcademicYearRequest"
+          },
+          {
+            "type": "object",
+            "required": [
+              "version"
+            ],
+            "properties": {
+              "version": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "description": "Current resource version. Required on updates to prevent lost writes."
+              }
+            }
+          }
+        ]
+      },
+      "SubjectUpdateRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SubjectRequest"
+          },
+          {
+            "type": "object",
+            "required": [
+              "version"
+            ],
+            "properties": {
+              "version": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "description": "Current resource version. Required on updates to prevent lost writes."
+              }
+            }
+          }
+        ]
+      },
+      "UserUpdateRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserRequest"
+          },
+          {
+            "type": "object",
+            "required": [
+              "version"
+            ],
+            "properties": {
+              "version": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 0,
+                "description": "Current resource version. Required on updates to prevent lost writes."
+              }
+            }
+          }
+        ]
+      },
+      "UserCreateRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserRequest"
+          },
+          {
+            "type": "object",
+            "required": [
+              "password"
+            ],
+            "properties": {
+              "password": {
+                "type": "string",
+                "format": "password",
+                "writeOnly": true,
+                "minLength": 12,
+                "maxLength": 128,
+                "description": "Initial password for the account.",
+                "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "securitySchemes": {
+      "sessionAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "JSESSIONID"
+      },
+      "csrfToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-TOKEN",
+        "description": "Swagger UI fetches the token automatically. Other clients must retain the session cookie and send the token from GET /api/auth/csrf in this header. Fetch a fresh token after login."
       }
     }
-  }
+  },
+  "security": [
+    {
+      "sessionAuth": []
+    }
+  ]
 }

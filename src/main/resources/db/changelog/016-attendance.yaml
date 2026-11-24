@@ -1,0 +1,156 @@
+databaseChangeLog:
+  - changeSet:
+      id: 016-attendance
+      author: codex
+      changes:
+        - createTable:
+            tableName: attendance_lesson
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints: {primaryKey: true, nullable: false}
+              - column:
+                  name: subject_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column: {name: school_class_id, type: uuid}
+              - column:
+                  name: lesson_date
+                  type: date
+                  constraints: {nullable: false}
+              - column:
+                  name: lesson_number
+                  type: int
+                  constraints: {nullable: false}
+              - column:
+                  name: state
+                  type: varchar(20)
+                  constraints: {nullable: false}
+              - column:
+                  name: last_saved_at
+                  type: timestamp with time zone
+                  constraints: {nullable: false}
+              - column:
+                  name: version
+                  type: bigint
+                  constraints: {nullable: false}
+        - addForeignKeyConstraint:
+            baseTableName: attendance_lesson
+            baseColumnNames: subject_id
+            referencedTableName: subject
+            referencedColumnNames: id
+            constraintName: fk_attendance_lesson_subject
+        - addForeignKeyConstraint:
+            baseTableName: attendance_lesson
+            baseColumnNames: school_class_id
+            referencedTableName: school_class
+            referencedColumnNames: id
+            constraintName: fk_attendance_lesson_class
+        - addUniqueConstraint:
+            tableName: attendance_lesson
+            columnNames: subject_id, lesson_date, lesson_number
+            constraintName: uq_attendance_lesson_subject_date_number
+        - createIndex:
+            tableName: attendance_lesson
+            indexName: ix_attendance_lesson_state_date
+            columns: [{column: {name: state}}, {column: {name: lesson_date}}]
+        - createIndex:
+            tableName: attendance_lesson
+            indexName: ix_attendance_lesson_class_date
+            columns: [{column: {name: school_class_id}}, {column: {name: lesson_date}}]
+        - createTable:
+            tableName: attendance_entry
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints: {primaryKey: true, nullable: false}
+              - column:
+                  name: lesson_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column:
+                  name: student_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column: {name: status, type: varchar(20)}
+        - addForeignKeyConstraint:
+            baseTableName: attendance_entry
+            baseColumnNames: lesson_id
+            referencedTableName: attendance_lesson
+            referencedColumnNames: id
+            constraintName: fk_attendance_entry_lesson
+        - addForeignKeyConstraint:
+            baseTableName: attendance_entry
+            baseColumnNames: student_id
+            referencedTableName: app_user
+            referencedColumnNames: id
+            constraintName: fk_attendance_entry_student
+        - addUniqueConstraint:
+            tableName: attendance_entry
+            columnNames: lesson_id, student_id
+            constraintName: uq_attendance_entry_lesson_student
+        - createIndex:
+            tableName: attendance_entry
+            indexName: ix_attendance_entry_student_lesson
+            columns: [{column: {name: student_id}}, {column: {name: lesson_id}}]
+        - createTable:
+            tableName: attendance_correction
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints: {primaryKey: true, nullable: false}
+              - column:
+                  name: entry_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column:
+                  name: previous_status
+                  type: varchar(20)
+                  constraints: {nullable: false}
+              - column:
+                  name: new_status
+                  type: varchar(20)
+                  constraints: {nullable: false}
+              - column:
+                  name: changed_by_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column:
+                  name: changed_at
+                  type: timestamp with time zone
+                  constraints: {nullable: false}
+        - addForeignKeyConstraint:
+            baseTableName: attendance_correction
+            baseColumnNames: entry_id
+            referencedTableName: attendance_entry
+            referencedColumnNames: id
+            constraintName: fk_attendance_correction_entry
+        - addForeignKeyConstraint:
+            baseTableName: attendance_correction
+            baseColumnNames: changed_by_id
+            referencedTableName: app_user
+            referencedColumnNames: id
+            constraintName: fk_attendance_correction_actor
+        - createIndex:
+            tableName: attendance_correction
+            indexName: ix_attendance_correction_entry_time
+            columns: [{column: {name: entry_id}}, {column: {name: changed_at}}]
+        - createIndex:
+            tableName: attendance_correction
+            indexName: ix_attendance_correction_actor
+            columns: [{column: {name: changed_by_id}}]
+        - sql:
+            sql: >-
+              ALTER TABLE attendance_lesson ADD CONSTRAINT ck_attendance_lesson_number CHECK (lesson_number BETWEEN 1 AND 99);
+              ALTER TABLE attendance_lesson ADD CONSTRAINT ck_attendance_lesson_state CHECK (state IN ('DRAFT', 'FINALIZED'));
+              ALTER TABLE attendance_entry ADD CONSTRAINT ck_attendance_entry_status CHECK (status IN ('PRESENT', 'ABSENT', 'LATE'));
+              ALTER TABLE attendance_correction ADD CONSTRAINT ck_attendance_correction_status CHECK (
+              previous_status IN ('PRESENT', 'ABSENT', 'LATE') AND new_status IN ('PRESENT', 'ABSENT', 'LATE')
+              AND previous_status <> new_status);
+      rollback:
+        - dropTable: {tableName: attendance_correction}
+        - dropTable: {tableName: attendance_entry}
+        - dropTable: {tableName: attendance_lesson}

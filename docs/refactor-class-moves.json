@@ -1,0 +1,90 @@
+{
+  "com.example.demo.DemoApplication": "dev.schooldiary.SchoolDiaryApplication",
+  "com.example.demo.domain.school.School": "dev.schooldiary.organization.internal.domain.School",
+  "com.example.demo.domain.academic.AcademicYear": "dev.schooldiary.organization.internal.domain.AcademicYear",
+  "com.example.demo.domain.schoolclass.SchoolClass": "dev.schooldiary.organization.internal.domain.SchoolClass",
+  "com.example.demo.domain.school.SchoolType": "dev.schooldiary.organization.internal.domain.SchoolType",
+  "com.example.demo.domain.school.SchoolRepository": "dev.schooldiary.organization.internal.persistence.SchoolRepository",
+  "com.example.demo.domain.academic.AcademicYearRepository": "dev.schooldiary.organization.internal.persistence.AcademicYearRepository",
+  "com.example.demo.domain.schoolclass.SchoolClassRepository": "dev.schooldiary.organization.internal.persistence.SchoolClassRepository",
+  "com.example.demo.domain.user.User": "dev.schooldiary.identity.internal.domain.User",
+  "com.example.demo.domain.user.UserRole": "dev.schooldiary.shared.access.UserRole",
+  "com.example.demo.infrastructure.ports.UserRepository": "dev.schooldiary.identity.internal.persistence.UserRepository",
+  "com.example.demo.domain.subject.Subject": "dev.schooldiary.diary.internal.domain.Subject",
+  "com.example.demo.domain.subject.SubjectRepository": "dev.schooldiary.diary.internal.persistence.SubjectRepository",
+  "com.example.demo.domain.enrollment.Enrollment": "dev.schooldiary.diary.internal.domain.Enrollment",
+  "com.example.demo.domain.enrollment.EnrollmentStatus": "dev.schooldiary.diary.internal.domain.EnrollmentStatus",
+  "com.example.demo.domain.enrollment.EnrollmentRepository": "dev.schooldiary.diary.internal.persistence.EnrollmentRepository",
+  "com.example.demo.domain.grade.Grade": "dev.schooldiary.diary.internal.domain.Grade",
+  "com.example.demo.domain.grade.GradeRevision": "dev.schooldiary.diary.internal.domain.GradeRevision",
+  "com.example.demo.domain.grade.Score": "dev.schooldiary.diary.internal.domain.Score",
+  "com.example.demo.domain.grade.GradeRevisionAction": "dev.schooldiary.diary.internal.domain.GradeRevisionAction",
+  "com.example.demo.domain.grade.GradeRepository": "dev.schooldiary.diary.internal.persistence.GradeRepository",
+  "com.example.demo.domain.grade.GradeRevisionRepository": "dev.schooldiary.diary.internal.persistence.GradeRevisionRepository",
+  "com.example.demo.app.UserService": "dev.schooldiary.identity.internal.application.UserService",
+  "com.example.demo.app.SchoolService": "dev.schooldiary.organization.internal.application.SchoolService",
+  "com.example.demo.app.AcademicService": "dev.schooldiary.organization.internal.application.AcademicService",
+  "com.example.demo.app.SubjectService": "dev.schooldiary.diary.internal.application.SubjectService",
+  "com.example.demo.app.EnrollmentService": "dev.schooldiary.diary.internal.application.EnrollmentService",
+  "com.example.demo.app.GradeService": "dev.schooldiary.diary.internal.application.GradeService",
+  "com.example.demo.api.user.UserMapper": [
+    "dev.schooldiary.identity.internal.application.UserMapper",
+    "dev.schooldiary.identity.internal.web.UserHttpMapper"
+  ],
+  "com.example.demo.api.school.SchoolMapper": [
+    "dev.schooldiary.organization.internal.application.SchoolMapper",
+    "dev.schooldiary.organization.internal.web.SchoolHttpMapper"
+  ],
+  "com.example.demo.api.academic.AcademicYearMapper": [
+    "dev.schooldiary.organization.internal.application.AcademicYearMapper",
+    "dev.schooldiary.organization.internal.web.AcademicYearHttpMapper"
+  ],
+  "com.example.demo.api.schoolclass.SchoolClassMapper": [
+    "dev.schooldiary.organization.internal.application.SchoolClassMapper",
+    "dev.schooldiary.organization.internal.web.ClassHttpMapper"
+  ],
+  "com.example.demo.api.subject.SubjectMapper": [
+    "dev.schooldiary.diary.internal.application.SubjectMapper",
+    "dev.schooldiary.diary.internal.web.SubjectHttpMapper"
+  ],
+  "com.example.demo.api.enrollment.EnrollmentMapper": [
+    "dev.schooldiary.diary.internal.application.EnrollmentMapper",
+    "dev.schooldiary.diary.internal.web.EnrollmentHttpMapper"
+  ],
+  "com.example.demo.api.grade.GradeMapper": [
+    "dev.schooldiary.diary.internal.application.GradeMapper",
+    "dev.schooldiary.diary.internal.web.GradeHttpMapper"
+  ],
+  "com.example.demo.api.user.UserController": "dev.schooldiary.identity.internal.web.UserController",
+  "com.example.demo.api.school.SchoolController": "dev.schooldiary.organization.internal.web.SchoolController",
+  "com.example.demo.api.academic.AcademicYearController": "dev.schooldiary.organization.internal.web.AcademicYearController",
+  "com.example.demo.api.schoolclass.SchoolClassController": "dev.schooldiary.organization.internal.web.SchoolClassController",
+  "com.example.demo.api.subject.SubjectController": "dev.schooldiary.diary.internal.web.SubjectController",
+  "com.example.demo.api.enrollment.EnrollmentController": "dev.schooldiary.diary.internal.web.EnrollmentController",
+  "com.example.demo.api.grade.GradeController": "dev.schooldiary.diary.internal.web.GradeController",
+  "com.example.demo.api.auth.AuthController": "dev.schooldiary.identity.internal.web.AuthController",
+  "com.example.demo.api.common.NotFoundException": "dev.schooldiary.shared.error.NotFoundException",
+  "com.example.demo.api.common.ConflictException": "dev.schooldiary.shared.error.ConflictException",
+  "com.example.demo.api.common.ApiErrorResponse": "dev.schooldiary.platform.web.ApiErrorResponse",
+  "com.example.demo.api.common.GlobalExceptionHandler": "dev.schooldiary.platform.web.GlobalExceptionHandler",
+  "com.example.demo.api.ping.PingController": "dev.schooldiary.platform.web.PingController",
+  "com.example.demo.app.Versions": "dev.schooldiary.shared.concurrency.Versions",
+  "com.example.demo.app.DemoDataInitializer": "dev.schooldiary.bootstrap.DemoDataInitializer",
+  "com.example.demo.security.BootstrapAdmin": "dev.schooldiary.identity.internal.bootstrap.BootstrapAdmin",
+  "com.example.demo.security.SecurityConfiguration": "dev.schooldiary.platform.security.SecurityConfiguration",
+  "com.example.demo.security.LoginRateLimitFilter": "dev.schooldiary.platform.security.LoginRateLimitFilter",
+  "com.example.demo.infrastructure.RequestLoggingFilter": "dev.schooldiary.platform.web.RequestLoggingFilter",
+  "com.example.demo.security.AccessPolicy": [
+    "dev.schooldiary.identity.internal.authentication.SessionActor",
+    "dev.schooldiary.shared.access.Actor",
+    "dev.schooldiary.shared.access.CurrentActor",
+    "dev.schooldiary.diary.internal.application.DiaryAccessPolicy"
+  ],
+  "com.example.demo.app.ScopedQueries": [
+    "dev.schooldiary.identity.internal.persistence.UserScopes",
+    "dev.schooldiary.identity.TeacherAccountScope",
+    "dev.schooldiary.diary.internal.persistence.DiaryTeacherAccountScope",
+    "dev.schooldiary.diary.internal.persistence.SubjectScopes",
+    "dev.schooldiary.diary.internal.persistence.GradeScopes"
+  ]
+}

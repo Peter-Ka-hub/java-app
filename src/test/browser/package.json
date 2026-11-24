@@ -1,0 +1,14 @@
+{
+  "name": "school-diary-browser-tests",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "install:chromium": "playwright install --only-shell chromium",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#142d3c">
+    <meta name="description" content="Dziennik szkolny — szkoły, klasy, przedmioty, zapisy i oceny w jednym miejscu.">
+    <title>Dziennik · Panel szkoły</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="ui/styles.css">
+    <script src="ui/api.js" defer></script>
+    <script src="ui/model.js" defer></script>
+    <script src="ui/attendance.js" defer></script>
+    <script src="ui/app.js" defer></script>
+  </head>
+  <body>
+    <div id="app">
+      <main class="loading-state" aria-busy="true">
+        <span class="eyebrow">Dziennik</span>
+        <p>Przygotowujemy Twój panel…</p>
+      </main>
+    </div>
+    <dialog id="modal" aria-labelledby="modal-title"></dialog>
+    <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+    <noscript>
+      <p class="notice">Włącz JavaScript w przeglądarce, aby korzystać z panelu dziennika. Dokumentacja API jest dostępna pod adresem <a href="swagger-ui/index.html">Swagger UI</a>.</p>
+    </noscript>
+  </body>
+</html>

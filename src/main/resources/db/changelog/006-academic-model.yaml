@@ -1,0 +1,552 @@
+databaseChangeLog:
+  # The original changesets are deliberately unchanged, including their contexts.
+  # Production must not filter by context: the original table definitions must run.
+  # Invalid legacy data is rejected; no accounts, grades or memberships are deleted.
+  - changeSet:
+      id: 006-validate-legacy-data
+      author: codex
+      preConditions:
+        - onFail: HALT
+        - onFailMessage: >-
+            Legacy data violates the diary invariants. Correct missing required values,
+            duplicate normalized emails, invalid dates, teacher/student roles and school assignments,
+            then rerun Liquibase. The migration does not delete or repair user data.
+        - sqlCheck:
+            expectedResult: "0"
+            sql: >-
+              SELECT COUNT(*) FROM app_user
+              WHERE last_name IS NULL OR role IS NULL OR date_of_birth IS NULL
+                 OR TRIM(first_name) = '' OR TRIM(last_name) = '' OR TRIM(email) = ''
+                 OR role NOT IN ('ADMIN', 'TEACHER', 'STUDENT')
+                 OR (role <> 'ADMIN' AND school_id IS NULL)
+                 OR date_of_birth >= CURRENT_DATE
+        - sqlCheck:
+            expectedResult: "0"
+            sql: >-
+              SELECT COUNT(*) FROM (
+                SELECT LOWER(TRIM(email)) FROM app_user
+                GROUP BY LOWER(TRIM(email)) HAVING COUNT(*) > 1
+              ) duplicate_email
+        - sqlCheck:
+            expectedResult: "0"
+            sql: >-
+              SELECT COUNT(*) FROM school
+              WHERE date_of_construction IS NULL OR type IS NULL OR address IS NULL
+                 OR TRIM(name) = '' OR TRIM(address) = ''
+                 OR type NOT IN ('PRIMARY', 'SECONDARY', 'TERTIARY')
+                 OR date_of_construction > CURRENT_DATE
+        - sqlCheck:
+            expectedResult: "0"
+            sql: >-
+              SELECT COUNT(*) FROM subject s LEFT JOIN app_user t ON t.id = s.teacher_id
+              WHERE s.name IS NULL OR TRIM(s.name) = '' OR t.id IS NULL
+                 OR t.role <> 'TEACHER' OR t.school_id IS NULL
+        - sqlCheck:
+            expectedResult: "0"
+            sql: >-
+              SELECT COUNT(*) FROM subject_students m
+              JOIN subject s ON s.id = m.subject_id
+              JOIN app_user t ON t.id = s.teacher_id
+              JOIN app_user u ON u.id = m.students_id
+              WHERE u.role <> 'STUDENT' OR u.school_id IS NULL OR u.school_id <> t.school_id
+        - sqlCheck:
+            expectedResult: "0"
+            sql: >-
+              SELECT COUNT(*) FROM grade g
+              LEFT JOIN subject s ON s.id = g.subject_id
+              LEFT JOIN app_user t ON t.id = s.teacher_id
+              LEFT JOIN app_user u ON u.id = g.student_id
+              WHERE g.score IS NULL OR g.date_of_score IS NULL OR s.id IS NULL OR u.id IS NULL
+                 OR g.score NOT IN ('A', 'B', 'C', 'D', 'E', 'F') OR g.date_of_score > CURRENT_DATE
+                 OR u.role <> 'STUDENT' OR u.school_id IS NULL OR u.school_id <> t.school_id
+                 OR NOT EXISTS (SELECT 1 FROM subject_students m
+                                WHERE m.subject_id = g.subject_id AND m.students_id = g.student_id)
+      changes:
+        - sql:
+            sql: SELECT 1
+
+  - changeSet:
+      id: 007-account-and-resource-versions
+      author: codex
+      changes:
+        - addColumn:
+            tableName: app_user
+            columns:
+              - column: {name: password_hash, type: varchar(255)}
+              - column:
+                  name: enabled
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints: {nullable: false}
+              - column:
+                  name: version
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints: {nullable: false}
+        - addColumn:
+            tableName: school
+            columns:
+              - column:
+                  name: version
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints: {nullable: false}
+        - addNotNullConstraint: {tableName: app_user, columnName: last_name, columnDataType: varchar(50)}
+        - addNotNullConstraint: {tableName: app_user, columnName: role, columnDataType: varchar(50)}
+        - addNotNullConstraint: {tableName: app_user, columnName: date_of_birth, columnDataType: date}
+        - addNotNullConstraint: {tableName: school, columnName: date_of_construction, columnDataType: date}
+        - addNotNullConstraint: {tableName: school, columnName: type, columnDataType: varchar(50)}
+        - addNotNullConstraint: {tableName: school, columnName: address, columnDataType: varchar(200)}
+        - sql:
+            sql: >-
+              UPDATE app_user SET email = LOWER(TRIM(email));
+              ALTER TABLE app_user ADD CONSTRAINT ck_app_user_role CHECK (role IN ('ADMIN', 'TEACHER', 'STUDENT'));
+              ALTER TABLE app_user ADD CONSTRAINT ck_app_user_email_normalized CHECK (email = LOWER(TRIM(email)) AND TRIM(email) <> '');
+              ALTER TABLE app_user ADD CONSTRAINT ck_app_user_name CHECK (TRIM(first_name) <> '' AND TRIM(last_name) <> '');
+              ALTER TABLE school ADD CONSTRAINT ck_school_name_address CHECK (TRIM(name) <> '' AND TRIM(address) <> '');
+        - createIndex:
+            tableName: app_user
+            indexName: ix_app_user_school_role
+            columns: [{column: {name: school_id}}, {column: {name: role}}]
+
+  - changeSet:
+      id: 008-academic-year-and-class
+      author: codex
+      changes:
+        - createTable:
+            tableName: academic_year
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints: {primaryKey: true, nullable: false}
+              - column:
+                  name: school_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column:
+                  name: name
+                  type: varchar(50)
+                  constraints: {nullable: false}
+              - column:
+                  name: start_date
+                  type: date
+                  constraints: {nullable: false}
+              - column:
+                  name: end_date
+                  type: date
+                  constraints: {nullable: false}
+              - column:
+                  name: version
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints: {nullable: false}
+        - addForeignKeyConstraint:
+            baseTableName: academic_year
+            baseColumnNames: school_id
+            referencedTableName: school
+            referencedColumnNames: id
+            constraintName: fk_academic_year_school
+        - addUniqueConstraint:
+            tableName: academic_year
+            columnNames: school_id, name
+            constraintName: uq_academic_year_school_name
+        - createTable:
+            tableName: school_class
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints: {primaryKey: true, nullable: false}
+              - column:
+                  name: school_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column:
+                  name: academic_year_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column:
+                  name: name
+                  type: varchar(50)
+                  constraints: {nullable: false}
+              - column:
+                  name: version
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints: {nullable: false}
+        - addForeignKeyConstraint:
+            baseTableName: school_class
+            baseColumnNames: school_id
+            referencedTableName: school
+            referencedColumnNames: id
+            constraintName: fk_school_class_school
+        - addForeignKeyConstraint:
+            baseTableName: school_class
+            baseColumnNames: academic_year_id
+            referencedTableName: academic_year
+            referencedColumnNames: id
+            constraintName: fk_school_class_academic_year
+        - addUniqueConstraint:
+            tableName: school_class
+            columnNames: academic_year_id, name
+            constraintName: uq_school_class_year_name
+        - createIndex:
+            tableName: school_class
+            indexName: ix_school_class_school
+            columns: [{column: {name: school_id}}]
+        - sql:
+            sql: >-
+              ALTER TABLE academic_year ADD CONSTRAINT ck_academic_year_dates CHECK (start_date < end_date);
+              ALTER TABLE academic_year ADD CONSTRAINT ck_academic_year_name CHECK (TRIM(name) <> '');
+              ALTER TABLE school_class ADD CONSTRAINT ck_school_class_name CHECK (TRIM(name) <> '');
+
+  - changeSet:
+      id: 009-subject-academic-context
+      author: codex
+      comment: >-
+          Legacy records did not identify a true academic year. Preserve them in a
+          distinct Legacy import period spanning the current September-to-August year
+          and every existing grade date in the school. This period may span multiple
+          school years and must not be interpreted as the original academic year.
+          The school UUID is reused as the imported academic-year UUID, providing a
+          deterministic identifier without a DB extension.
+      changes:
+        - addColumn:
+            tableName: subject
+            columns:
+              - column: {name: school_id, type: uuid}
+              - column: {name: academic_year_id, type: uuid}
+              - column: {name: school_class_id, type: uuid}
+              - column:
+                  name: version
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints: {nullable: false}
+        - sql:
+            sql: >-
+              INSERT INTO academic_year (id, school_id, name, start_date, end_date, version)
+              SELECT legacy.school_id, legacy.school_id, 'Legacy import',
+                CAST(CONCAT(CAST(EXTRACT(YEAR FROM legacy.oldest_date) - CASE WHEN EXTRACT(MONTH FROM legacy.oldest_date) < 9 THEN 1 ELSE 0 END AS VARCHAR), '-09-01') AS DATE),
+                CAST(CONCAT(CAST(EXTRACT(YEAR FROM legacy.newest_date) + CASE WHEN EXTRACT(MONTH FROM legacy.newest_date) >= 9 THEN 1 ELSE 0 END AS VARCHAR), '-08-31') AS DATE), 0
+              FROM (
+                SELECT school.id AS school_id,
+                  LEAST(CURRENT_DATE, COALESCE(MIN(g.date_of_score), CURRENT_DATE)) AS oldest_date,
+                  GREATEST(CURRENT_DATE, COALESCE(MAX(g.date_of_score), CURRENT_DATE)) AS newest_date
+                FROM school
+                JOIN app_user teacher ON teacher.school_id = school.id
+                JOIN subject sub ON sub.teacher_id = teacher.id
+                LEFT JOIN grade g ON g.subject_id = sub.id
+                GROUP BY school.id
+              ) legacy;
+              UPDATE subject SET school_id = (SELECT u.school_id FROM app_user u WHERE u.id = subject.teacher_id);
+              UPDATE subject SET academic_year_id = school_id;
+        - addNotNullConstraint: {tableName: subject, columnName: name, columnDataType: varchar(50)}
+        - addNotNullConstraint: {tableName: subject, columnName: teacher_id, columnDataType: uuid}
+        - addNotNullConstraint: {tableName: subject, columnName: school_id, columnDataType: uuid}
+        - addNotNullConstraint: {tableName: subject, columnName: academic_year_id, columnDataType: uuid}
+        - addForeignKeyConstraint:
+            baseTableName: subject
+            baseColumnNames: school_id
+            referencedTableName: school
+            referencedColumnNames: id
+            constraintName: fk_subject_school
+        - addForeignKeyConstraint:
+            baseTableName: subject
+            baseColumnNames: academic_year_id
+            referencedTableName: academic_year
+            referencedColumnNames: id
+            constraintName: fk_subject_academic_year
+        - addForeignKeyConstraint:
+            baseTableName: subject
+            baseColumnNames: school_class_id
+            referencedTableName: school_class
+            referencedColumnNames: id
+            constraintName: fk_subject_school_class
+        - createIndex:
+            tableName: subject
+            indexName: ix_subject_school
+            columns: [{column: {name: school_id}}]
+        - createIndex:
+            tableName: subject
+            indexName: ix_subject_teacher
+            columns: [{column: {name: teacher_id}}]
+        - createIndex:
+            tableName: subject
+            indexName: ix_subject_academic_year
+            columns: [{column: {name: academic_year_id}}]
+        - createIndex:
+            tableName: subject
+            indexName: ix_subject_school_class
+            columns: [{column: {name: school_class_id}}]
+        - sql:
+            sql: ALTER TABLE subject ADD CONSTRAINT ck_subject_name CHECK (TRIM(name) <> '')
+
+  - changeSet:
+      id: 010-enrollment
+      author: codex
+      comment: >-
+          The legacy join date is unknown. Infer the earliest recorded grade date for
+          that student and subject, or the import date when no grade exists. This
+          preserves the validity of existing grade dates without fabricating a true
+          enrollment start date. subject_students remains an archival source.
+      changes:
+        - createTable:
+            tableName: enrollment
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints: {primaryKey: true, nullable: false}
+              - column:
+                  name: subject_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column:
+                  name: student_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column:
+                  name: joined_on
+                  type: date
+                  constraints: {nullable: false}
+              - column: {name: left_on, type: date}
+              - column:
+                  name: status
+                  type: varchar(20)
+                  constraints: {nullable: false}
+              - column:
+                  name: version
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints: {nullable: false}
+        - addForeignKeyConstraint:
+            baseTableName: enrollment
+            baseColumnNames: subject_id
+            referencedTableName: subject
+            referencedColumnNames: id
+            constraintName: fk_enrollment_subject
+        - addForeignKeyConstraint:
+            baseTableName: enrollment
+            baseColumnNames: student_id
+            referencedTableName: app_user
+            referencedColumnNames: id
+            constraintName: fk_enrollment_student
+        - addUniqueConstraint:
+            tableName: enrollment
+            columnNames: subject_id, student_id
+            constraintName: uq_enrollment_subject_student
+        - createIndex:
+            tableName: enrollment
+            indexName: ix_enrollment_student_status
+            columns: [{column: {name: student_id}}, {column: {name: status}}]
+        - createIndex:
+            tableName: enrollment
+            indexName: ix_enrollment_subject_status
+            columns: [{column: {name: subject_id}}, {column: {name: status}}]
+        - sql:
+            dbms: postgresql
+            sql: >-
+              INSERT INTO enrollment (id, subject_id, student_id, joined_on, status, version)
+              SELECT gen_random_uuid(), membership.subject_id, membership.students_id,
+                LEAST(CURRENT_DATE, COALESCE((SELECT MIN(g.date_of_score) FROM grade g
+                  WHERE g.subject_id = membership.subject_id AND g.student_id = membership.students_id), CURRENT_DATE)),
+                'ACTIVE', 0
+              FROM subject_students membership
+        - sql:
+            dbms: h2
+            sql: >-
+              INSERT INTO enrollment (id, subject_id, student_id, joined_on, status, version)
+              SELECT RANDOM_UUID(), membership.subject_id, membership.students_id,
+                LEAST(CURRENT_DATE, COALESCE((SELECT MIN(g.date_of_score) FROM grade g
+                  WHERE g.subject_id = membership.subject_id AND g.student_id = membership.students_id), CURRENT_DATE)),
+                'ACTIVE', 0
+              FROM subject_students membership
+        - sql:
+            sql: >-
+              ALTER TABLE enrollment ADD CONSTRAINT ck_enrollment_status CHECK (status IN ('ACTIVE', 'WITHDRAWN'));
+              ALTER TABLE enrollment ADD CONSTRAINT ck_enrollment_dates CHECK (left_on IS NULL OR left_on >= joined_on);
+              ALTER TABLE enrollment ADD CONSTRAINT ck_enrollment_lifecycle CHECK ((status = 'ACTIVE' AND left_on IS NULL) OR (status = 'WITHDRAWN' AND left_on IS NOT NULL));
+        # Retained as an archival source for reviewing inferred import dates.
+        # New application code never reads or writes subject_students.
+
+  - changeSet:
+      id: 011-grade-audit-metadata
+      author: codex
+      comment: Legacy grade authors are inferred from the assigned teacher; original timestamps are unknown.
+      changes:
+        - addColumn:
+            tableName: grade
+            columns:
+              - column: {name: graded_by_id, type: uuid}
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: {nullable: false}
+              - column:
+                  name: updated_at
+                  type: timestamp with time zone
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints: {nullable: false}
+              - column:
+                  name: version
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints: {nullable: false}
+        - sql:
+            sql: >-
+              UPDATE grade SET graded_by_id = (SELECT s.teacher_id FROM subject s WHERE s.id = grade.subject_id);
+              ALTER TABLE grade ADD CONSTRAINT ck_grade_score CHECK (score IN ('A', 'B', 'C', 'D', 'E', 'F'));
+        - addNotNullConstraint: {tableName: grade, columnName: score, columnDataType: varchar(50)}
+        - addNotNullConstraint: {tableName: grade, columnName: date_of_score, columnDataType: date}
+        - addNotNullConstraint: {tableName: grade, columnName: student_id, columnDataType: uuid}
+        - addNotNullConstraint: {tableName: grade, columnName: subject_id, columnDataType: uuid}
+        - addNotNullConstraint: {tableName: grade, columnName: graded_by_id, columnDataType: uuid}
+        - addForeignKeyConstraint:
+            baseTableName: grade
+            baseColumnNames: graded_by_id
+            referencedTableName: app_user
+            referencedColumnNames: id
+            constraintName: fk_grade_graded_by
+        - createIndex:
+            tableName: grade
+            indexName: ix_grade_student
+            columns: [{column: {name: student_id}}]
+        - createIndex:
+            tableName: grade
+            indexName: ix_grade_subject
+            columns: [{column: {name: subject_id}}]
+        - createIndex:
+            tableName: grade
+            indexName: ix_grade_graded_by
+            columns: [{column: {name: graded_by_id}}]
+
+  - changeSet:
+      id: 012-grade-revision
+      author: codex
+      comment: Audit begins after migration; no fabricated historical revisions are inserted.
+      changes:
+        - createTable:
+            tableName: grade_revision
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints: {primaryKey: true, nullable: false}
+              - column:
+                  name: grade_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column:
+                  name: score
+                  type: varchar(50)
+                  constraints: {nullable: false}
+              - column:
+                  name: date_of_score
+                  type: date
+                  constraints: {nullable: false}
+              - column:
+                  name: student_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column:
+                  name: subject_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column:
+                  name: changed_by_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column:
+                  name: changed_at
+                  type: timestamp with time zone
+                  constraints: {nullable: false}
+              - column:
+                  name: action
+                  type: varchar(20)
+                  constraints: {nullable: false}
+        - addForeignKeyConstraint:
+            baseTableName: grade_revision
+            baseColumnNames: student_id
+            referencedTableName: app_user
+            referencedColumnNames: id
+            constraintName: fk_grade_revision_student
+        - addForeignKeyConstraint:
+            baseTableName: grade_revision
+            baseColumnNames: subject_id
+            referencedTableName: subject
+            referencedColumnNames: id
+            constraintName: fk_grade_revision_subject
+        - addForeignKeyConstraint:
+            baseTableName: grade_revision
+            baseColumnNames: changed_by_id
+            referencedTableName: app_user
+            referencedColumnNames: id
+            constraintName: fk_grade_revision_changed_by
+        - createIndex:
+            tableName: grade_revision
+            indexName: ix_grade_revision_grade_date
+            columns: [{column: {name: grade_id}}, {column: {name: changed_at}}]
+        - createIndex:
+            tableName: grade_revision
+            indexName: ix_grade_revision_student
+            columns: [{column: {name: student_id}}]
+        - createIndex:
+            tableName: grade_revision
+            indexName: ix_grade_revision_subject
+            columns: [{column: {name: subject_id}}]
+        - createIndex:
+            tableName: grade_revision
+            indexName: ix_grade_revision_changed_by
+            columns: [{column: {name: changed_by_id}}]
+        - sql:
+            sql: >-
+              ALTER TABLE grade_revision ADD CONSTRAINT ck_grade_revision_action CHECK (action IN ('CREATED', 'UPDATED', 'DELETED'));
+              ALTER TABLE grade_revision ADD CONSTRAINT ck_grade_revision_score CHECK (score IN ('A', 'B', 'C', 'D', 'E', 'F'));
+
+  - changeSet:
+      id: 013-school-context-integrity
+      author: codex
+      comment: Composite foreign keys prevent mismatched school, academic year, class and teacher assignments.
+      changes:
+        - addUniqueConstraint:
+            tableName: app_user
+            columnNames: id, school_id
+            constraintName: uq_app_user_id_school
+        - addUniqueConstraint:
+            tableName: academic_year
+            columnNames: id, school_id
+            constraintName: uq_academic_year_id_school
+        - addUniqueConstraint:
+            tableName: school_class
+            columnNames: id, academic_year_id, school_id
+            constraintName: uq_school_class_id_year_school
+        - addForeignKeyConstraint:
+            baseTableName: school_class
+            baseColumnNames: academic_year_id, school_id
+            referencedTableName: academic_year
+            referencedColumnNames: id, school_id
+            constraintName: fk_school_class_year_school
+        - addForeignKeyConstraint:
+            baseTableName: subject
+            baseColumnNames: academic_year_id, school_id
+            referencedTableName: academic_year
+            referencedColumnNames: id, school_id
+            constraintName: fk_subject_year_school
+        - addForeignKeyConstraint:
+            baseTableName: subject
+            baseColumnNames: school_class_id, academic_year_id, school_id
+            referencedTableName: school_class
+            referencedColumnNames: id, academic_year_id, school_id
+            constraintName: fk_subject_class_year_school
+        - addForeignKeyConstraint:
+            baseTableName: subject
+            baseColumnNames: teacher_id, school_id
+            referencedTableName: app_user
+            referencedColumnNames: id, school_id
+            constraintName: fk_subject_teacher_school
+        - sql:
+            sql: >-
+              ALTER TABLE app_user ADD CONSTRAINT ck_app_user_school CHECK (role = 'ADMIN' OR school_id IS NOT NULL);
+              ALTER TABLE school ADD CONSTRAINT ck_school_type CHECK (type IN ('PRIMARY', 'SECONDARY', 'TERTIARY'));

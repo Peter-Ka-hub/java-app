@@ -1,36 +1,113 @@
-GET http://localhost:8080/hello-world
-###
-GET http://localhost:8080/user/new
+# IntelliJ HTTP Client: set the credentials to your configured bootstrap account.
+# The client preserves the session cookie between requests.
+@baseUrl = http://localhost:8080
+@adminEmail = admin@example.test
+@adminPassword = replace-with-your-own-long-password
+@demoPassword = replace-with-a-separate-long-password
 
-### Ping
-GET http://localhost:8080/api/ping
+### 1. Fetch a CSRF token before login
+GET {{baseUrl}}/api/auth/csrf
 
+> {% client.global.set("csrf", response.body.token); %}
 
-### Get all tasks
-GET http://localhost:8080/api/tasks
-
-
-### Create task
-POST http://localhost:8080/api/tasks
+### 2. Sign in; successful login rotates the session and CSRF token
+POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
 
-{
-  "title": "Nauczyć się REST API w Spring Boot"
-}
+{"email":"{{adminEmail}}","password":"{{adminPassword}}"}
 
+### 3. Fetch a fresh CSRF token after login
+GET {{baseUrl}}/api/auth/csrf
 
-### Create invalid task
-POST http://localhost:8080/api/tasks
+> {% client.global.set("csrf", response.body.token); %}
+
+### 4. Inspect the current account
+GET {{baseUrl}}/api/auth/me
+
+### 5. Create a school
+POST {{baseUrl}}/api/schools
 Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
 
-{
-  "title": ""
-}
+{"name":"Portfolio School","address":"1 Example Street","dateOfConstruction":"2000-09-01","type":"SECONDARY"}
 
+> {% client.global.set("schoolId", response.body.id); %}
 
-### Mark task as done
-PATCH http://localhost:8080/api/tasks/1/done
+### 6. Create an academic year (adjust dates when running in a different year)
+POST {{baseUrl}}/api/academic-years
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
 
+{"name":"2026/2027","schoolId":"{{schoolId}}","startDate":"2026-09-01","endDate":"2027-08-31"}
 
-### Mark non-existing task as done
-PATCH http://localhost:8080/api/tasks/999/done
+> {% client.global.set("yearId", response.body.id); %}
+
+### 7. Create a class
+POST {{baseUrl}}/api/classes
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{"name":"1A","schoolId":"{{schoolId}}","academicYearId":"{{yearId}}"}
+
+> {% client.global.set("classId", response.body.id); %}
+
+### 8. Create a teacher (use different addresses for another run)
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{"firstName":"Alex","lastName":"Teacher","email":"teacher@portfolio.test","role":"TEACHER","dateOfBirth":"1990-01-01","schoolId":"{{schoolId}}","password":"{{demoPassword}}"}
+
+> {% client.global.set("teacherId", response.body.id); %}
+
+### 9. Create a student
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{"firstName":"Sam","lastName":"Student","email":"student@portfolio.test","role":"STUDENT","dateOfBirth":"2010-01-01","schoolId":"{{schoolId}}","password":"{{demoPassword}}"}
+
+> {% client.global.set("studentId", response.body.id); %}
+
+### 10. Assign a subject offering
+POST {{baseUrl}}/api/subjects
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{"name":"Mathematics","teacherId":"{{teacherId}}","schoolId":"{{schoolId}}","academicYearId":"{{yearId}}","classId":"{{classId}}"}
+
+> {% client.global.set("subjectId", response.body.id); %}
+
+### 11. Enroll the student (adjust joinedOn to today)
+POST {{baseUrl}}/api/enrollments
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{"subjectId":"{{subjectId}}","studentId":"{{studentId}}","joinedOn":"2026-10-21"}
+
+### 12. Award a grade on the enrollment date
+POST {{baseUrl}}/api/grades
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{"score":"B","dateOfScore":"2026-10-21","studentId":"{{studentId}}","subjectId":"{{subjectId}}"}
+
+> {% client.global.set("gradeId", response.body.id); client.global.set("gradeVersion", response.body.version); %}
+
+### 13. Correct the grade with its current version
+PUT {{baseUrl}}/api/grades/{{gradeId}}
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf}}
+
+{"score":"A","dateOfScore":"2026-10-21","studentId":"{{studentId}}","subjectId":"{{subjectId}}","version":{{gradeVersion}}}
+
+### 14. Read immutable snapshots of both grades
+GET {{baseUrl}}/api/grades/{{gradeId}}/history
+
+### 15. Invalid pagination returns 400
+GET {{baseUrl}}/api/users?size=101
+
+### 16. Sign out
+POST {{baseUrl}}/api/auth/logout
+X-CSRF-TOKEN: {{csrf}}

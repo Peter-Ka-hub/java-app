@@ -196,3 +196,15 @@ databaseChangeLog:
             referencedTableName: app_user
             referencedColumnNames: id
             constraintName: fk_subject_students_user
+
+  - include:
+      file: db/changelog/006-academic-model.yaml
+
+  - include:
+      file: db/changelog/014-session-credentials-version.yaml
+
+  - include:
+      file: db/changelog/015-account-invitations.yaml
+
+  - include:
+      file: db/changelog/016-attendance.yaml

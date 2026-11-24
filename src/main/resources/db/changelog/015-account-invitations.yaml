@@ -1,0 +1,52 @@
+databaseChangeLog:
+  - changeSet:
+      id: 015-account-invitations
+      author: codex
+      changes:
+        - createTable:
+            tableName: account_invitation
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints: {primaryKey: true, nullable: false}
+              - column:
+                  name: token_hash
+                  type: varchar(64)
+                  constraints: {nullable: false, unique: true, uniqueConstraintName: uq_account_invitation_token_hash}
+              - column:
+                  name: email
+                  type: varchar(50)
+                  constraints: {nullable: false}
+              - column:
+                  name: role
+                  type: varchar(50)
+                  constraints: {nullable: false}
+              - column:
+                  name: school_id
+                  type: uuid
+                  constraints: {nullable: false}
+              - column:
+                  name: expires_at
+                  type: timestamp with time zone
+                  constraints: {nullable: false}
+              - column: {name: accepted_at, type: timestamp with time zone}
+              - column: {name: revoked_at, type: timestamp with time zone}
+        - addForeignKeyConstraint:
+            baseTableName: account_invitation
+            baseColumnNames: school_id
+            referencedTableName: school
+            referencedColumnNames: id
+            constraintName: fk_account_invitation_school
+            onDelete: CASCADE
+        - createIndex:
+            tableName: account_invitation
+            indexName: ix_account_invitation_school_expiry
+            columns: [{column: {name: school_id}}, {column: {name: expires_at}}, {column: {name: id}}]
+        - sql:
+            sql: >-
+              ALTER TABLE account_invitation ADD CONSTRAINT ck_account_invitation_role CHECK (role IN ('STUDENT', 'TEACHER'));
+              ALTER TABLE account_invitation ADD CONSTRAINT ck_account_invitation_email CHECK (email = LOWER(TRIM(email)) AND TRIM(email) <> '');
+              ALTER TABLE account_invitation ADD CONSTRAINT ck_account_invitation_lifecycle CHECK (accepted_at IS NULL OR revoked_at IS NULL);
+      rollback:
+        - dropTable: {tableName: account_invitation}

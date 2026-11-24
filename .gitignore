@@ -35,3 +35,17 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Local data, credentials, and reports
+data/
+.env
+.env.*
+!.env.example
+*.log
+*.jks
+*.p12
+*.pem
+cookies.txt
+csrf.json
+*.dump
+/src/test/browser/node_modules/
