@@ -51,6 +51,12 @@ tasks.named("compileJava") {
 	dependsOn(tasks.named("openApiGenerate"))
 }
 
+tasks.named<ProcessResources>("processResources") {
+	from("src/main/resources/openapi/openapi.json") {
+		into("static")
+	}
+}
+
 val mapstructVersion = "1.6.3"
 dependencies {
 	implementation("org.mapstruct:mapstruct:${mapstructVersion}")

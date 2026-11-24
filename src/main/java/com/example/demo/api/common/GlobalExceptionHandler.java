@@ -1,6 +1,7 @@
 package com.example.demo.api.common;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -26,11 +27,31 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), List.of(), req);
     }
 
-    @ExceptionHandler({IllegalArgumentException.class,
-            MethodArgumentTypeMismatchException.class,
-            HttpMessageNotReadableException.class})
-    public ResponseEntity<ApiErrorResponse> handleBadRequest(Exception ex, HttpServletRequest req) {
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiErrorResponse> handleBadRequest(IllegalArgumentException ex, HttpServletRequest req) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), List.of(), req);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex,
+                                                             HttpServletRequest req) {
+        return build(HttpStatus.BAD_REQUEST, "Invalid parameter: " + ex.getName(), List.of(), req);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiErrorResponse> handleUnreadableBody(HttpMessageNotReadableException ex,
+                                                               HttpServletRequest req) {
+        return build(HttpStatus.BAD_REQUEST, "Malformed JSON or invalid field value", List.of(), req);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleConstraintViolation(ConstraintViolationException ex,
+                                                                    HttpServletRequest req) {
+        List<String> errors = ex.getConstraintViolations().stream()
+                .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+                .sorted()
+                .toList();
+        return build(HttpStatus.BAD_REQUEST, "Validation failed", errors, req);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
