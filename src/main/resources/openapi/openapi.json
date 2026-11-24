@@ -73,10 +73,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                    "$ref": "#/components/schemas/SchoolPageResponse"
+                  "$ref": "#/components/schemas/SchoolPageResponse"
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -137,6 +140,9 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -200,8 +206,14 @@
           "204": {
             "description": "School deleted"
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -228,10 +240,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                    "$ref": "#/components/schemas/UserPageResponse"
+                  "$ref": "#/components/schemas/UserPageResponse"
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -266,6 +281,12 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
@@ -292,6 +313,9 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -324,11 +348,11 @@
           "200": {
             "description": "User updated",
             "content": {
-             "application/json": {
-               "schema": {
-                 "$ref": "#/components/schemas/UserResponse"
-               }
-             }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
             }
           },
           "400": {
@@ -336,6 +360,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -354,8 +381,14 @@
           "204": {
             "description": "User deleted"
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -382,6 +415,9 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -416,6 +452,9 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
@@ -443,8 +482,11 @@
               }
             }
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "404": {
-                  "$ref": "#/components/responses/NotFound"
+            "$ref": "#/components/responses/NotFound"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -505,8 +547,14 @@
           "204": {
             "description": "Subject deleted"
           },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
@@ -574,6 +622,9 @@
           "400": {
             "$ref": "#/components/responses/BadRequest"
           },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
           "500": {
             "$ref": "#/components/responses/InternalServerError"
           }
@@ -600,6 +651,9 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -662,6 +716,9 @@
         "responses": {
           "204": {
             "description": "Grade deleted"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -737,29 +794,50 @@
             }
           }
         }
+      },
+      "Conflict": {
+        "description": "Request conflicts with existing data, for example a duplicate email or a resource still in use.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
       }
     },
     "schemas": {
       "SchoolRequest": {
         "type": "object",
-        "required": ["name", "address", "dateOfConstruction", "type"],
+        "required": [
+          "name",
+          "address",
+          "dateOfConstruction",
+          "type"
+        ],
         "properties": {
           "name": {
             "type": "string",
             "minLength": 1,
             "maxLength": 50,
-            "example": "Liceum Ogólnokształcące nr 1"
+            "example": "Liceum Ogólnokształcące nr 1",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Must contain at least one non-whitespace character."
           },
           "address": {
             "type": "string",
             "minLength": 1,
             "maxLength": 200,
-            "example": "ul. Szkolna 5, 00-001 Warszawa"
+            "example": "ul. Szkolna 5, 00-001 Warszawa",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Must contain at least one non-whitespace character."
           },
           "dateOfConstruction": {
             "type": "string",
             "format": "date",
-            "example": "2000-09-01"
+            "example": "2000-09-01",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.PastOrPresent",
+            "description": "Must not be in the future."
           },
           "type": {
             "$ref": "#/components/schemas/SchoolType"
@@ -828,25 +906,38 @@
       },
       "UserRequest": {
         "type": "object",
-        "required": ["firstName", "lastName", "email", "role", "dateOfBirth"],
+        "required": [
+          "firstName",
+          "lastName",
+          "email",
+          "role",
+          "dateOfBirth"
+        ],
         "properties": {
           "firstName": {
             "type": "string",
             "minLength": 1,
             "maxLength": 50,
-            "example": "Jan"
+            "example": "Jan",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Must contain at least one non-whitespace character."
           },
           "lastName": {
             "type": "string",
             "minLength": 1,
             "maxLength": 50,
-            "example": "Kowalski"
+            "example": "Kowalski",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Must contain at least one non-whitespace character."
           },
           "email": {
             "type": "string",
             "format": "email",
             "maxLength": 50,
-            "example": "example@gmail.com"
+            "example": "example@gmail.com",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Required valid email address. Stored in lowercase; uniqueness is case-insensitive.",
+            "minLength": 1
           },
           "role": {
             "$ref": "#/components/schemas/UserRole"
@@ -854,7 +945,9 @@
           "dateOfBirth": {
             "type": "string",
             "format": "date",
-            "example": "2000-01-01"
+            "example": "2000-01-01",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.Past",
+            "description": "Must be in the past."
           },
           "schoolId": {
             "type": "string",
@@ -936,13 +1029,18 @@
       },
       "SubjectRequest": {
         "type": "object",
-        "required": ["name", "teacherId"],
+        "required": [
+          "name",
+          "teacherId"
+        ],
         "properties": {
           "name": {
             "type": "string",
             "minLength": 1,
             "maxLength": 50,
-            "example": "math"
+            "example": "math",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.NotBlank",
+            "description": "Must contain at least one non-whitespace character."
           },
           "teacherId": {
             "type": "string",
@@ -1018,7 +1116,12 @@
       },
       "GradeRequest": {
         "type": "object",
-        "required": ["score", "dateOfScore", "studentId", "subjectId"],
+        "required": [
+          "score",
+          "dateOfScore",
+          "studentId",
+          "subjectId"
+        ],
         "properties": {
           "score": {
             "$ref": "#/components/schemas/GradeScore"
@@ -1026,7 +1129,9 @@
           "dateOfScore": {
             "type": "string",
             "format": "date",
-            "example": "2000-01-01"
+            "example": "2000-01-01",
+            "x-field-extra-annotation": "@jakarta.validation.constraints.PastOrPresent",
+            "description": "Must not be in the future."
           },
           "studentId": {
             "type": "string",
